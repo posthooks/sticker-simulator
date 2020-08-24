@@ -1,0 +1,12 @@
+# Trigger a release when a tag is pushed that starts with v then some number.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.*'
+
+name: Release
+
+jobs:
+  release:
+    name: Release
+    runs-on: ${{ matrix.os }
