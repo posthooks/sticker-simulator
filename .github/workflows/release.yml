@@ -9,4 +9,19 @@ name: Release
 jobs:
   release:
     name: Release
-    runs-on: ${{ matrix.os }
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write # Needed for creating releases
+
+    strategy:
+      matrix:
+        include:
+        - build: linux
+          os: ubuntu-latest
+          target: x86_64-unknown-linux-gnu
+        - build: macos
+          os: macos-latest
+          target: x86_64-apple-darwin
+        - build: windows
+          os: windows-2019
+          target: x86_64-pc-
