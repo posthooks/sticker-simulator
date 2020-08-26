@@ -24,4 +24,21 @@ jobs:
           target: x86_64-apple-darwin
         - build: windows
           os: windows-2019
-          target: x86_64-pc-
+          target: x86_64-pc-windows-msvc
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+
+    - name: Extract release notes
+      shell: bash
+      run: |
+        awk "/# Version ${GITHUB_REF_NAME#v}/{flag=1; next} /^$/{flag=0} flag" RELEASE_NOTES.md >REL.md
+
+    - name: Build release binary
+      uses: actions-rs/carg
