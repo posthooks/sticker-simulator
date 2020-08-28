@@ -53,4 +53,15 @@ jobs:
         mkdir "$n"
         cp "target/${{ matrix.target }}/release/evcxr" "$n"
         strip "$n/evcxr"
-        tar zcf $n.tar.gz
+        tar zcf $n.tar.gz $n
+        n="evcxr_jupyter-${{ github.ref_name }}-${{ matrix.target }}"
+        mkdir "$n"
+        cp "target/${{ matrix.target }}/release/evcxr_jupyter" "$n"
+        strip "$n/evcxr_jupyter"
+        tar zcf $n.tar.gz $n
+
+    - name: Zip binaries (Window)
+      if: matrix.build == 'windows'
+      shell: bash
+      run: |
+        n="evcxr-${{ github.ref_name }}
