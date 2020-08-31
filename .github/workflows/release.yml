@@ -64,4 +64,16 @@ jobs:
       if: matrix.build == 'windows'
       shell: bash
       run: |
-        n="evcxr-${{ github.ref_name }}
+        n="evcxr-${{ github.ref_name }}-${{ matrix.target }}"
+        mkdir "$n"
+        cp "target/${{ matrix.target }}/release/evcxr.exe" "$n"
+        7z a $n.zip $n
+        n="evcxr_jupyter-${{ github.ref_name }}-${{ matrix.target }}"
+        mkdir "$n"
+        cp "target/${{ matrix.target }}/release/evcxr_jupyter.exe" "$n"
+        7z a $n.zip $n
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+    
