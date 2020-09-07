@@ -76,4 +76,7 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-    
+        body_path: REL.md
+        files: |
+          evcxr-v*.*
+          evcxr_jupyter-v*.*
