@@ -9,4 +9,11 @@ requirements are met.
 
 Feel free to do your pull requests however you like. You're welcome to either
 amend your commits, or add fixup commits. If you add fixup commits, then we'll
-s
+squash and rebase your PR when we merge it. If you've got more than one commit
+and you'd like to keep them separate when they're merged, then it's probably
+best to squash any fixups into the relevant original commit.
+
+## Cargo fmt
+
+When you send a pull request a github action will make sure it builds and passes
+tests. It will also check that the code is formatt
