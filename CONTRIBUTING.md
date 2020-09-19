@@ -16,4 +16,16 @@ best to squash any fixups into the relevant original commit.
 ## Cargo fmt
 
 When you send a pull request a github action will make sure it builds and passes
-tests. It will also check that the code is formatt
+tests. It will also check that the code is formatted according to rustfmt. To
+save extra cycles, it's recommended to run `cargo fmt` before you commit your
+changes.
+
+## Community Guidelines
+
+This project aims to follow the same [code of
+conduct](https://www.rust-lang.org/policies/code-of-conduct) as Rust. If there's
+a problem, please contact [David Lattimore](https://github.com/davidlattimore).
+
+## Testing
+
+When ru
