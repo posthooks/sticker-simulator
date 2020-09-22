@@ -28,4 +28,15 @@ a problem, please contact [David Lattimore](https://github.com/davidlattimore).
 
 ## Testing
 
-When ru
+When running tests, it may be useful to run them as follows:
+
+```sh
+EVCXR_TMPDIR=$HOME/tmp/e1 cargo test -- --test-threads 1
+```
+
+Setting the tmpdir means the generated code doesn't get cleaned up and you can
+view it when things go wrong.
+
+Using only a single test thread is currently necessary. Using multiple
+evaluation contexts simultaneously currently doesn't work. I haven't
+investigate
