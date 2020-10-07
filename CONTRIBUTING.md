@@ -39,4 +39,9 @@ view it when things go wrong.
 
 Using only a single test thread is currently necessary. Using multiple
 evaluation contexts simultaneously currently doesn't work. I haven't
-investigate
+investigated this since in practice it doesn't come up besides in tests.
+
+## Questions?
+
+If you're not sure, feel free to submit a draft PR, file an issue or whatever
+works best.
