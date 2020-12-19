@@ -260,4 +260,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9d60b42ad7478d3e027e2f9ea4e99fbbb8fdee0c8c3cf068be269f57e603618"
 dependencies = [
  "chalk-derive",
- "chalk-ir
+ "chalk-ir",
+ "chalk-solve",
+ "rustc-hash",
+ "tracing",
+]
+
+[[package]]
+name = "chalk-solve"
+version = "0.88.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab30620ea5b36819525eaab2204f4b8e1842fc7ee36826424a28bef59ae7fecf"
+dependencies = [
+ "chalk-derive",
+ "chalk-ir",
+ "ena",
+ "indexmap",
+ "itertools",
+ "petgraph",
+ "rustc-hash",
+ "tracing",
+]
+
+[[packa
