@@ -754,4 +754,34 @@ checksum = "15ed7e9b5d7d7506798f5154e9e6390a08a0d4fff03835247a4f423041059a78"
 [[package]]
 name = "evcxr_jupyter"
 version = "0.14.2"
-dependencies 
+dependencies = [
+ "anyhow",
+ "ariadne",
+ "bytes",
+ "chrono",
+ "colored",
+ "crossbeam-channel 0.5.5",
+ "dirs",
+ "evcxr",
+ "generic-array",
+ "hex",
+ "hmac",
+ "json",
+ "mimalloc",
+ "sha2",
+ "tokio",
+ "unicode-segmentation",
+ "uuid 1.1.2",
+ "zeromq",
+]
+
+[[package]]
+name = "evcxr_repl"
+version = "0.14.2"
+dependencies = [
+ "anyhow",
+ "ariadne",
+ "colored",
+ "crossbeam-channel 0.5.5",
+ "ctrlc",
+ "e
