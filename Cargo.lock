@@ -1025,4 +1025,16 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "hkalbasi-rustc-ap-rustc_abi"
 version = "0.0.20221221"
-source =
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adabaadad9aa7576f97af02241cdf5554d62fb3d51a84cb05d77ba28edd3013f"
+dependencies = [
+ "bitflags",
+ "hkalbasi-rustc-ap-rustc_index",
+ "tracing",
+]
+
+[[package]]
+name = "hkalbasi-rustc-ap-rustc_index"
+version = "0.0.20221221"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4d3c48474e09af
