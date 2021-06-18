@@ -1300,4 +1300,20 @@ dependencies = [
  "libc",
  "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
- "windows-sys
+ "windows-sys 0.36.1",
+]
+
+[[package]]
+name = "miow"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52ffbca2f655e33c08be35d87278e5b18b89550a37dbd598c20db92f6a471123"
+dependencies = [
+ "windows-sys 0.42.0",
+]
+
+[[package]]
+name = "nibble_vec"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "
