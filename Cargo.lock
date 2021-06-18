@@ -1349,3 +1349,21 @@ name = "notify"
 version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed2c66da08abae1c024c01d635253e402341b4060a12e99b31c7594063bf490a"
+dependencies = [
+ "bitflags",
+ "crossbeam-channel 0.5.5",
+ "filetime",
+ "fsevent-sys",
+ "inotify",
+ "kqueue",
+ "libc",
+ "mio",
+ "walkdir",
+ "winapi",
+]
+
+[[package]]
+name = "num-integer"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9
