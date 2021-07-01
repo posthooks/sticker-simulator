@@ -1643,4 +1643,17 @@ dependencies = [
 [[package]]
 name = "ra_ap_cfg"
 version = "0.0.149"
-source = "registry+http
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3138e8f1ab3fa4ec60f7d318d7ef085f8a174fcfbe4c818b59785b84bf86e93"
+dependencies = [
+ "ra_ap_tt",
+ "rustc-hash",
+]
+
+[[package]]
+name = "ra_ap_hir"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcb5deba96cfbe6aaf201adaf517a8c33612992e3c73a7392210e4f2e33d8fe7"
+dependencies = [
+ "a
