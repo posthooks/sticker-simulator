@@ -1608,4 +1608,21 @@ dependencies = [
 [[package]]
 name = "pulldown-cmark-to-cmark"
 version = "10.0.4"
-source = "registry+https://github.com/rust-lang/crates.io
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0194e6e1966c23cc5fd988714f85b18d548d773e81965413555d96569931833d"
+dependencies = [
+ "pulldown-cmark",
+]
+
+[[package]]
+name = "quote"
+version = "1.0.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bcdf212e9776fbcb2d23ab029360416bb1706b1aea2d1a5ba002727cbcab804"
+dependencies = [
+ "proc-macro2",
+]
+
+[[package]]
+name = "ra_ap_base_db"
+version = "0.0
