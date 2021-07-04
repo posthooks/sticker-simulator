@@ -1677,4 +1677,25 @@ dependencies = [
 name = "ra_ap_hir_def"
 version = "0.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bf83641e085c8d038e8c6
+checksum = "3bf83641e085c8d038e8c68338b74dd69233d48fc82ff552dfb68bef2194d37f"
+dependencies = [
+ "anymap",
+ "arrayvec",
+ "bitflags",
+ "cov-mark",
+ "dashmap 5.4.0",
+ "drop_bomb",
+ "either",
+ "fst",
+ "hashbrown",
+ "hkalbasi-rustc-ap-rustc_abi",
+ "hkalbasi-rustc-ap-rustc_index",
+ "indexmap",
+ "itertools",
+ "once_cell",
+ "ra_ap_base_db",
+ "ra_ap_cfg",
+ "ra_ap_hir_expand",
+ "ra_ap_intern",
+ "ra_ap_la-arena",
+ "
