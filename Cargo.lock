@@ -1738,4 +1738,25 @@ dependencies = [
 name = "ra_ap_hir_ty"
 version = "0.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd778cfcfbd35b39c682143
+checksum = "bd778cfcfbd35b39c682143050db4448668d377a18fae64f3cae377dd0ae01bc"
+dependencies = [
+ "arrayvec",
+ "bitflags",
+ "chalk-derive",
+ "chalk-ir",
+ "chalk-recursive",
+ "chalk-solve",
+ "cov-mark",
+ "ena",
+ "hkalbasi-rustc-ap-rustc_index",
+ "itertools",
+ "once_cell",
+ "ra_ap_base_db",
+ "ra_ap_hir_def",
+ "ra_ap_hir_expand",
+ "ra_ap_intern",
+ "ra_ap_la-arena",
+ "ra_ap_limit",
+ "ra_ap_profile",
+ "ra_ap_stdx",
+ "r
