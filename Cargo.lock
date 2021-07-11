@@ -1759,4 +1759,22 @@ dependencies = [
  "ra_ap_limit",
  "ra_ap_profile",
  "ra_ap_stdx",
- "r
+ "ra_ap_syntax",
+ "rustc-hash",
+ "scoped-tls",
+ "smallvec",
+ "tracing",
+ "typed-arena",
+]
+
+[[package]]
+name = "ra_ap_ide"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4392239e8d0f5ecd0c96994370d353b46257692e23f3e15598612c5a9d2a9294"
+dependencies = [
+ "cov-mark",
+ "crossbeam-channel 0.5.5",
+ "dot",
+ "either",
+ "itertool
