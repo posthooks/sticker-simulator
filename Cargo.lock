@@ -1819,4 +1819,23 @@ dependencies = [
 [[package]]
 name = "ra_ap_ide_completion"
 version = "0.0.149"
-so
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "009b78e07d390f8687b6ac6868ab44ed82b2efdcc553781f060769ae7ab55b25"
+dependencies = [
+ "cov-mark",
+ "itertools",
+ "once_cell",
+ "ra_ap_base_db",
+ "ra_ap_hir",
+ "ra_ap_ide_db",
+ "ra_ap_profile",
+ "ra_ap_stdx",
+ "ra_ap_syntax",
+ "ra_ap_text_edit",
+ "smallvec",
+]
+
+[[package]]
+name = "ra_ap_ide_db"
+version = "0.0.149"
+source = "regi
