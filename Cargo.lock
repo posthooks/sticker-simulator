@@ -1838,4 +1838,22 @@ dependencies = [
 [[package]]
 name = "ra_ap_ide_db"
 version = "0.0.149"
-source = "regi
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eed6ce36a85b52ef486a86ca060e5c00277ea78168182cb58d511b17411ead83"
+dependencies = [
+ "arrayvec",
+ "cov-mark",
+ "either",
+ "fst",
+ "indexmap",
+ "itertools",
+ "memchr",
+ "once_cell",
+ "ra_ap_base_db",
+ "ra_ap_hir",
+ "ra_ap_limit",
+ "ra_ap_parser",
+ "ra_ap_profile",
+ "ra_ap_stdx",
+ "ra_ap_syntax",
+ "ra_ap_text_edit",
