@@ -1912,4 +1912,16 @@ dependencies = [
 [[package]]
 name = "ra_ap_la-arena"
 version = "0.0.149"
-source = "registry+https://github.com/rust-lang/crates
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b4a0c80c6019507c485ee321058ffcc9f975a17192a7575a363d2f2e235a832"
+
+[[package]]
+name = "ra_ap_limit"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4e78afcbf32928cd9c4e80a3ca9a5d3fbfd4a6a3199b8e3db07cad94862d463"
+
+[[package]]
+name = "ra_ap_mbe"
+version = "0.0.149"
+source = "registry+https://github.com/rus
