@@ -1941,4 +1941,19 @@ dependencies = [
 name = "ra_ap_parser"
 version = "0.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13fca12584b7d616b9a64af2d4cf103757
+checksum = "13fca12584b7d616b9a64af2d4cf103757f255e9e98354f347fbe23b1db13868"
+dependencies = [
+ "drop_bomb",
+ "ra_ap_limit",
+ "rustc-ap-rustc_lexer",
+]
+
+[[package]]
+name = "ra_ap_paths"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d780b450680460bd7ea3e2483dcf15a3ac0ce0ec028696caa342c577d65e5506"
+
+[[package]]
+name = "ra_ap_profile"
+version = "0.0.149"
