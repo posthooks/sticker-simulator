@@ -1972,4 +1972,20 @@ dependencies = [
 [[package]]
 name = "ra_ap_project_model"
 version = "0.0.149"
-source = "reg
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5468f2f6cfb4bc6bc1c5507b6bc251905a515c05b089785914d057503167cf3"
+dependencies = [
+ "anyhow",
+ "cargo_metadata",
+ "ra_ap_base_db",
+ "ra_ap_cfg",
+ "ra_ap_la-arena",
+ "ra_ap_paths",
+ "ra_ap_profile",
+ "ra_ap_stdx",
+ "ra_ap_toolchain",
+ "rustc-hash",
+ "semver",
+ "serde",
+ "serde_json",
+ "tra
