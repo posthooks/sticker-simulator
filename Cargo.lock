@@ -1957,3 +1957,19 @@ checksum = "d780b450680460bd7ea3e2483dcf15a3ac0ce0ec028696caa342c577d65e5506"
 [[package]]
 name = "ra_ap_profile"
 version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e400f2df7f3da4439a58981ee223395beed88a86c7dc93a989a36b4a860c36cc"
+dependencies = [
+ "cfg-if 1.0.0",
+ "countme",
+ "libc",
+ "once_cell",
+ "perf-event",
+ "ra_ap_la-arena",
+ "winapi",
+]
+
+[[package]]
+name = "ra_ap_project_model"
+version = "0.0.149"
+source = "reg
