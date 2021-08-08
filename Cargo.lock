@@ -2007,4 +2007,23 @@ dependencies = [
 name = "ra_ap_syntax"
 version = "0.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-che
+checksum = "45a20b080e1f71cde39e7dd986e56c9dea52be5639875ecf713f60412f337a41"
+dependencies = [
+ "cov-mark",
+ "indexmap",
+ "itertools",
+ "once_cell",
+ "ra_ap_parser",
+ "ra_ap_profile",
+ "ra_ap_stdx",
+ "ra_ap_text_edit",
+ "rowan",
+ "rustc-ap-rustc_lexer",
+ "rustc-hash",
+ "smol_str",
+]
+
+[[package]]
+name = "ra_ap_test_utils"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-
