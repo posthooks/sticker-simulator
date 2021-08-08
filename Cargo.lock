@@ -2026,4 +2026,18 @@ dependencies = [
 [[package]]
 name = "ra_ap_test_utils"
 version = "0.0.149"
-source = "registry+https://github.com/rust-lang/crates.io-
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f418160da780b9ed778af27aca37632cdafcdc2b9a33efbb964c33b72f6fe0ee"
+dependencies = [
+ "dissimilar",
+ "ra_ap_profile",
+ "ra_ap_stdx",
+ "rustc-hash",
+ "text-size",
+]
+
+[[package]]
+name = "ra_ap_text_edit"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d18158c7690e2d0b9d7d1e708db9838628063ce7c
