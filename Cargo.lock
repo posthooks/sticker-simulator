@@ -2040,4 +2040,22 @@ dependencies = [
 name = "ra_ap_text_edit"
 version = "0.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d18158c7690e2d0b9d7d1e708db9838628063ce7c
+checksum = "d18158c7690e2d0b9d7d1e708db9838628063ce7c7c6e5abe3cae4df30da4721"
+dependencies = [
+ "itertools",
+ "text-size",
+]
+
+[[package]]
+name = "ra_ap_toolchain"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18b9b9c66352b3c4cf36c88cb1d8083305cd7194baa4dce7c5b5fb0ddd2b1e39"
+dependencies = [
+ "home",
+]
+
+[[package]]
+name = "ra_ap_tt"
+version = "0.0.149"
+source = "registry+https://github.com/r
