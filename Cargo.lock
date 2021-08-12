@@ -2058,4 +2058,16 @@ dependencies = [
 [[package]]
 name = "ra_ap_tt"
 version = "0.0.149"
-source = "registry+https://github.com/r
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2178f2c74ed554007a684998b5e6e2a24a8cd878b4e1e58a791bd6f0a36bd3e9"
+dependencies = [
+ "ra_ap_stdx",
+ "smol_str",
+]
+
+[[package]]
+name = "ra_ap_vfs"
+version = "0.0.149"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8cd60adecd0947e1dd41a3077713381aa0cdcba6dc8777300d7d5b83b9fbe84"
+dependencies = 
