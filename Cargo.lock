@@ -2152,4 +2152,21 @@ checksum = "bd99e5772ead8baa5215278c9b15bf92087709e9c1b2d1f97cdb5a183c933a7d"
 dependencies = [
  "autocfg",
  "crossbeam-deque 0.8.1",
- "ei
+ "either",
+ "rayon-core",
+]
+
+[[package]]
+name = "rayon-core"
+version = "1.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "258bcdb5ac6dad48491bb2992db6b7cf74878b0384908af124823d118c99683f"
+dependencies = [
+ "crossbeam-channel 0.5.5",
+ "crossbeam-deque 0.8.1",
+ "crossbeam-utils 0.8.10",
+ "num_cpus",
+]
+
+[[package]]
+name = "redox_syscall
