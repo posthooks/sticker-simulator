@@ -2215,4 +2215,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "r
+name = "rowan"
+version = "0.15.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5811547e7ba31e903fe48c8ceab10d40d70a101f3d15523c847cce91aa71f332"
+dependencies = [
+ "countme",
+ "hashbrown",
+ "memoffset 0.6.5",
+ "rustc-hash",
+ "text-size",
+]
+
+[[package]]
+name = "rustc-ap-rustc_lexer"
+version = "725.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f950742ef8a203aa76
