@@ -2278,4 +2278,20 @@ dependencies = [
  "memchr",
  "nix 0.24.2",
  "radix_trie",
- 
+ "scopeguard",
+ "unicode-segmentation",
+ "unicode-width",
+ "utf8parse",
+ "winapi",
+]
+
+[[package]]
+name = "ryu"
+version = "1.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3f6f92acf49d1b98f7a81226834412ada05458b7364277387724a237f062695"
+
+[[package]]
+name = "salsa"
+version = "0.17.0-pre.2"
+source = "registry+https:/
