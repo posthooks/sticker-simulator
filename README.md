@@ -28,4 +28,4 @@ to preview this, or you can load it from Jupyter Notebook and run it yourself.
 This software is distributed under the terms of both the MIT license and the
 Apache License (Version 2.0).
 
-S
+See LICENSE for details.
