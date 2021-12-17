@@ -14,4 +14,8 @@
   from the working dir.
 * Automatically make all items pub
   * Probably not really practical while we can't make use of spans from syn.
-* Investigate lack of warning: function cannot return
+* Investigate lack of warning: function cannot return without recurring
+  * Probably we're not currently showing any warnings (if compilation
+    succeeds). Perhaps we should.
+* Consider emitting compilation errors as HTML and adding an "explain" link.
+  
