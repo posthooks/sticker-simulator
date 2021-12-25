@@ -15,4 +15,14 @@
 * We write the code as a crate then get cargo to build it and write the result
   as a shared object (e.g. a .so file on Linux).
   
-* We open the shared object (e.g. using dlopen on Linux), look up the s
+* We open the shared object (e.g. using dlopen on Linux), look up the symbol for
+  our function and call it.
+  
+* There's a small runtime crate (evcxr\_internal\_runtime) that gets added as a
+  dependency. This holds all variables in a ```HashMap<String, Box<Any +
+  static>>```.
+  
+* We look for variable declarations in the syntax tree we got from the syn crate
+  and add code to store those variables into the map.
+  
+* Next time we run som
