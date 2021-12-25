@@ -32,4 +32,11 @@
   them into the map as type String. When rustc gives us a compilation error, it
   tells us their actual type. We then compile again with the corrected types.
 
-* Fortunately rustc can be asked to emit errors as JSON and we've
+* Fortunately rustc can be asked to emit errors as JSON and we've recorded
+  metadata about each line of source as we write it out, so this ends up less
+  hacky than it sounds (although it's still obviously not ideal).
+
+* We also use compilation errors to tell us:
+  * Whether a variable has been moved, so is no longer available.
+  * Whether a variable is non-copy and is referenced by the code being run. This
+    allows us to restrict variables l
