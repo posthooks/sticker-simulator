@@ -25,4 +25,11 @@
 * We look for variable declarations in the syntax tree we got from the syn crate
   and add code to store those variables into the map.
   
-* Next time we run som
+* Next time we run some code, we move the variable values back out of the map,
+  restoring them with the same name and type as before.
+  
+* In order to restore variables with their correct type, we attempt to store
+  them into the map as type String. When rustc gives us a compilation error, it
+  tells us their actual type. We then compile again with the corrected types.
+
+* Fortunately rustc can be asked to emit errors as JSON and we've
