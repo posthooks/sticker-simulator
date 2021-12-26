@@ -39,4 +39,11 @@
 * We also use compilation errors to tell us:
   * Whether a variable has been moved, so is no longer available.
   * Whether a variable is non-copy and is referenced by the code being run. This
-    allows us to restrict variables l
+    allows us to restrict variables lost during a panic to only these variables.
+  * Whether the final expression implements a method evcxr\_display.
+
+* All user code is run in a subprocess with which we communicate via
+  stdin/stdout, giving it some simple commands to do things like load a .so file
+  and run a user function contained within.
+
+* Using a subprocess has several advan
