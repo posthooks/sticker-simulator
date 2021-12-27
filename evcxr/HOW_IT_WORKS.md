@@ -46,4 +46,12 @@
   stdin/stdout, giving it some simple commands to do things like load a .so file
   and run a user function contained within.
 
-* Using a subprocess has several advan
+* Using a subprocess has several advantages:
+  * It allows us to restart everything if the subprocess segfaults due to some
+    bad unsafe code.
+  * It's probably easier to port since we don't need to capture our own
+    stdout/stderr.
+  * We can use out stdout/stderr for printing stuff, since we didn't redirect
+    them.
+  * It keeps things isolated if running multiple EvaluationContexts at once
+    (e.g. from tests).
