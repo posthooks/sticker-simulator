@@ -20,4 +20,14 @@ on the repository and we can figure out your use case.
 
 Should work with the latest stable release. May sometimes work with one or two
 older version. See evcxr/Cargo.toml for the current minimum supported rust
-version. If you're stuck on an older version of
+version. If you're stuck on an older version of rustc, your best bet is either
+to use a precompiled binary or use an older version of Evcxr. The release notes
+might give clues as to when MSRV bumps occurred.
+
+## How it works
+
+See [how it works](HOW_IT_WORKS.md)
+
+## Release notes
+
+See [release notes](RELEASE_NOTES.md)
