@@ -18,4 +18,18 @@ pub(crate) struct Segment {
     pub(crate) kind: CodeKind,
     pub(crate) code: String,
     num_lines: usize,
-    /// Only present for original user code. Provides ordering 
+    /// Only present for original user code. Provides ordering and identity to the segments that
+    /// came from the user.
+    pub(crate) sequence: Option<usize>,
+}
+
+impl Segment {
+    fn new(kind: CodeKind, mut code: String) -> Segment {
+        if !code.ends_with('\n') {
+            code.push('\n');
+        }
+        Segment {
+            kind,
+            num_lines: num_lines(&code),
+            code,
+           
