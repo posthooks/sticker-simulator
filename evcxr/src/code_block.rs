@@ -32,4 +32,19 @@ impl Segment {
             kind,
             num_lines: num_lines(&code),
             code,
-           
+            sequence: None,
+        }
+    }
+}
+
+/// Information about the code the user supplied.
+pub(crate) struct UserCodeInfo<'a> {
+    pub(crate) nodes: Vec<SyntaxNode>,
+    pub(crate) original_lines: Vec<&'a str>,
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub(crate) struct CommandCall {
+    pub(crate) command: String,
+    pub(crate) args: Option<String>,
+    start_byte: usize
