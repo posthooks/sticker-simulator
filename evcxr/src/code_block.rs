@@ -47,4 +47,14 @@ pub(crate) struct UserCodeInfo<'a> {
 pub(crate) struct CommandCall {
     pub(crate) command: String,
     pub(crate) args: Option<String>,
-    start_byte: usize
+    start_byte: usize,
+    pub(crate) line_number: usize,
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub(crate) enum CodeKind {
+    /// The code was supplied by the user. Errors should be reported to the user.
+    OriginalUserCode(UserCodeMetadata),
+    /// User code for which we don't track offsets.
+    OtherUserCode,
+    /// Code is packing a variable into the variable store. Failure modes include (a) in
