@@ -57,4 +57,11 @@ pub(crate) enum CodeKind {
     OriginalUserCode(UserCodeMetadata),
     /// User code for which we don't track offsets.
     OtherUserCode,
-    /// Code is packing a variable into the variable store. Failure modes include (a) in
+    /// Code is packing a variable into the variable store. Failure modes include (a) incorrect type
+    /// (b) variable has been moved (c) non-static lifetime.
+    PackVariable {
+        variable_name: String,
+    },
+    /// A line of code that has a fallback to be used in case the supplied line fails to compile.
+    WithFallback(CodeBlock),
+    /// Code that we generated, but which we don't expect errors from. If we get errors there's
