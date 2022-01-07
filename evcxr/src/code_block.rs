@@ -64,4 +64,15 @@ pub(crate) enum CodeKind {
     },
     /// A line of code that has a fallback to be used in case the supplied line fails to compile.
     WithFallback(CodeBlock),
-    /// Code that we generated, but which we don't expect errors from. If we get errors there's
+    /// Code that we generated, but which we don't expect errors from. If we get errors there's not
+    /// much we can do besides give the user as much information as we can, apologise and ask to
+    /// file a bug report.
+    OtherGeneratedCode,
+    /// We had trouble determining what the error applied to.
+    Command(CommandCall),
+    Unknown,
+}
+
+impl CodeKind {
+    /// Returns whether self is a WithFallback where the replacement is equal to the supplied
+    /// fallback. Us
