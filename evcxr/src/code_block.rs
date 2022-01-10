@@ -75,4 +75,9 @@ pub(crate) enum CodeKind {
 
 impl CodeKind {
     /// Returns whether self is a WithFallback where the replacement is equal to the supplied
-    /// fallback. Us
+    /// fallback. Using the whole fallback as an "ID" may seem a bit heavy handed, but I doubt if
+    /// this is likely to ever be a performance consideration. Also, in theory we should perhaps use
+    /// the code being replaced as the ID, but in practice the fallback is equally unique.
+    fn equals_fallback(&self, fallback: &CodeBlock) -> bool {
+        if let CodeKind::WithFallback(self_fallback) = self {
+          
