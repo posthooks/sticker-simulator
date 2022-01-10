@@ -80,4 +80,21 @@ impl CodeKind {
     /// the code being replaced as the ID, but in practice the fallback is equally unique.
     fn equals_fallback(&self, fallback: &CodeBlock) -> bool {
         if let CodeKind::WithFallback(self_fallback) = self {
-          
+            return self_fallback == fallback;
+        }
+        false
+    }
+
+    pub(crate) fn is_user_supplied(&self) -> bool {
+        matches!(
+            self,
+            CodeKind::OriginalUserCode(_) | CodeKind::OtherUserCode | CodeKind::Command(_)
+        )
+    }
+}
+
+fn num_lines(code: &str) -> usize {
+    code.chars().filter(|ch| *ch == '\n').count()
+}
+
+pub(crate) fn count_columns(code: &str) -> usi
