@@ -104,3 +104,11 @@ pub(crate) fn count_columns(code: &str) -> usize {
     // graphemes, but that is handled by the REPL.
     code.chars().count()
 }
+
+/// Information about some code that the user supplied.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub(crate) struct UserCodeMetadata {
+    /// The starting byte in the code as the user wrote it.
+    pub(crate) start_byte: usize,
+    pub(crate) node_index: usize,
+    /// The line number (starting from 1) in the original user code on whi
