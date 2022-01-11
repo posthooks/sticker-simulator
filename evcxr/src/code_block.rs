@@ -97,4 +97,10 @@ fn num_lines(code: &str) -> usize {
     code.chars().filter(|ch| *ch == '\n').count()
 }
 
-pub(crate) fn count_columns(code: &str) -> usi
+pub(crate) fn count_columns(code: &str) -> usize {
+    // We use characters here, not graphemes because seems to be how columns are counted by the rust
+    // compiler, which we need to be consistent with. It also works well with the inline error
+    // reporting in Jupyter notebook. It doesn't work so well for the terminal, which needs
+    // graphemes, but that is handled by the REPL.
+    code.chars().count()
+}
