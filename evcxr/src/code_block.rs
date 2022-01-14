@@ -118,4 +118,14 @@ pub(crate) struct UserCodeMetadata {
     pub(crate) column_offset: usize,
 }
 
-/// Represents a unit of code. This may be code that the user suppl
+/// Represents a unit of code. This may be code that the user supplied, in which case it might
+/// include evcxr commands. By the time the code is ready to send to the compiler, it shouldn't have
+/// any evcxr commands and should have additional supporting code for things like packing and
+/// unpacking variables.
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub(crate) struct CodeBlock {
+    pub(crate) segments: Vec<Segment>,
+}
+
+impl CodeBlock {
+ 
