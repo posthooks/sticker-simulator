@@ -111,4 +111,11 @@ pub(crate) struct UserCodeMetadata {
     /// The starting byte in the code as the user wrote it.
     pub(crate) start_byte: usize,
     pub(crate) node_index: usize,
-    /// The line number (starting from 1) in the original user code on whi
+    /// The line number (starting from 1) in the original user code on which this code starts.
+    pub(crate) start_line: usize,
+    /// The number of graphemes (not characters or bytes) on the line from which
+    /// this code came that are prior to and not included in this code.
+    pub(crate) column_offset: usize,
+}
+
+/// Represents a unit of code. This may be code that the user suppl
