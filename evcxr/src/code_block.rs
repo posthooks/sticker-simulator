@@ -136,4 +136,17 @@ impl CodeBlock {
     /// value of `f` once done. This is a convenience for when we only have a
     /// &mut, not an owned value.
     pub(crate) fn modify<F: FnOnce(CodeBlock) -> CodeBlock>(&mut self, f: F) {
-        let mut block = std::me
+        let mut block = std::mem::take(self);
+        block = f(block);
+        *self = block;
+    }
+
+    pub(crate) fn commit_old_user_code(&mut self) {
+        for segment in self.segments.iter_mut() {
+            if matches!(segment.kind, CodeKind::OriginalUserCode(_)) {
+                segment.kind = CodeKind::OtherUserCode;
+            }
+        }
+    }
+
+    pub(crate) fn i
