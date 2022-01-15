@@ -128,4 +128,12 @@ pub(crate) struct CodeBlock {
 }
 
 impl CodeBlock {
- 
+    pub(crate) fn new() -> CodeBlock {
+        Self::default()
+    }
+
+    /// Passes `self` as an owned value to `f`, replacing `self` with the return
+    /// value of `f` once done. This is a convenience for when we only have a
+    /// &mut, not an owned value.
+    pub(crate) fn modify<F: FnOnce(CodeBlock) -> CodeBlock>(&mut self, f: F) {
+        let mut block = std::me
