@@ -173,4 +173,13 @@ impl CodeBlock {
         self.with(CodeKind::WithFallback(fallback), code)
     }
 
-    pub(crate) fn generated<T
+    pub(crate) fn generated<T: Into<String>>(self, code: T) -> Self {
+        self.with(CodeKind::OtherGeneratedCode, code)
+    }
+
+    pub(crate) fn other_user_code(self, user_code: String) -> CodeBlock {
+        self.with(CodeKind::OtherUserCode, user_code)
+    }
+
+    pub(crate) fn from_original_user_code(user_code: &str) -> (CodeBlock, UserCodeInfo) {
+        static COMMAND_RE: OnceCell<Regex> 
