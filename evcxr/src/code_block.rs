@@ -149,4 +149,15 @@ impl CodeBlock {
         }
     }
 
-    pub(crate) fn i
+    pub(crate) fn is_empty(&self) -> bool {
+        self.segments.is_empty()
+    }
+
+    pub(crate) fn segment_with_index(&self, index: usize) -> Option<&Segment> {
+        self.segments
+            .iter()
+            .find(|segment| segment.sequence == Some(index))
+    }
+
+    pub(crate) fn with_segment(mut self, segment: Segment) -> Self {
+        self.segments.push(segmen
