@@ -160,4 +160,17 @@ impl CodeBlock {
     }
 
     pub(crate) fn with_segment(mut self, segment: Segment) -> Self {
-        self.segments.push(segmen
+        self.segments.push(segment);
+        self
+    }
+
+    pub(crate) fn with<T: Into<String>>(mut self, origin: CodeKind, code: T) -> Self {
+        self.segments.push(Segment::new(origin, code.into()));
+        self
+    }
+
+    pub(crate) fn code_with_fallback<T: Into<String>>(self, code: T, fallback: CodeBlock) -> Self {
+        self.with(CodeKind::WithFallback(fallback), code)
+    }
+
+    pub(crate) fn generated<T
