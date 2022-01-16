@@ -182,4 +182,13 @@ impl CodeBlock {
     }
 
     pub(crate) fn from_original_user_code(user_code: &str) -> (CodeBlock, UserCodeInfo) {
-        static COMMAND_RE: OnceCell<Regex> 
+        static COMMAND_RE: OnceCell<Regex> = OnceCell::new();
+        let command_re = COMMAND_RE.get_or_init(|| Regex::new("^ *(:[^ ]*)( +(.*))?$").unwrap());
+        let mut code_block = CodeBlock::new();
+        let mut nodes = Vec::new();
+
+        let mut lines = user_code.lines();
+        let mut line_number = 1;
+        let mut current_line = lines.next().unwrap_or(user_code);
+
+        for (command_line_offset, line) in use
