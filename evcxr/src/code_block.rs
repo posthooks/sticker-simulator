@@ -191,4 +191,10 @@ impl CodeBlock {
         let mut line_number = 1;
         let mut current_line = lines.next().unwrap_or(user_code);
 
-        for (command_line_offset, line) in use
+        for (command_line_offset, line) in user_code.lines().enumerate() {
+            // We only accept commands up until the first non-command.
+            if let Some(captures) = command_re.captures(line) {
+                code_block = code_block.with(
+                    CodeKind::Command(CommandCall {
+                        command: captures[1].to_owned(),
+                        args: captures.get(3).map(|
