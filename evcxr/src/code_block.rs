@@ -197,4 +197,11 @@ impl CodeBlock {
                 code_block = code_block.with(
                     CodeKind::Command(CommandCall {
                         command: captures[1].to_owned(),
-                        args: captures.get(3).map(|
+                        args: captures.get(3).map(|m| m.as_str().to_owned()),
+                        start_byte: line.as_ptr() as usize - user_code.as_ptr() as usize,
+                        line_number: command_line_offset + 1,
+                    }),
+                    line,
+                );
+            } else if line.starts_with(r"//") || line.trim().is_empty() {
+                // Ignore blank lines, otherwise 
