@@ -208,4 +208,14 @@ impl CodeBlock {
                 // We also ignore lines that start with //, because those are line comments.
             } else {
                 // Anything else, we treat as Rust code to be executed. Since we don't accept commands after Rust code, we're done looking for commands.
-                let non_command_start_byte = line.as_ptr() as usize - user_code.as_ptr() as us
+                let non_command_start_byte = line.as_ptr() as usize - user_code.as_ptr() as usize;
+                for OriginalUserCode {
+                    code,
+                    start_byte,
+                    node,
+                } in
+                    statement_splitter::split_into_statements(&user_code[non_command_start_byte..])
+                {
+                    let node_index = nodes.len();
+                    while code.as_ptr() as usize
+            
