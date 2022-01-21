@@ -218,4 +218,10 @@ impl CodeBlock {
                 {
                     let node_index = nodes.len();
                     while code.as_ptr() as usize
-            
+                        >= current_line.as_ptr() as usize + current_line.len()
+                    {
+                        line_number += 1;
+                        // Unwrap must succeed since code is past the end of the current line.
+                        current_line = lines.next().unwrap();
+                    }
+                    let byte_offset = code.as_ptr() as usiz
