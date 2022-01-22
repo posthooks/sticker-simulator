@@ -224,4 +224,10 @@ impl CodeBlock {
                         // Unwrap must succeed since code is past the end of the current line.
                         current_line = lines.next().unwrap();
                     }
-                    let byte_offset = code.as_ptr() as usiz
+                    let byte_offset = code.as_ptr() as usize - current_line.as_ptr() as usize;
+                    let column_offset = count_columns(&current_line[..byte_offset]);
+                    code_block = code_block.with(
+                        CodeKind::OriginalUserCode(UserCodeMetadata {
+                            start_byte: start_byte + non_command_start_byte,
+                            node_index,
+                            start_line: li
