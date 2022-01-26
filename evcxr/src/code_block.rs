@@ -230,4 +230,16 @@ impl CodeBlock {
                         CodeKind::OriginalUserCode(UserCodeMetadata {
                             start_byte: start_byte + non_command_start_byte,
                             node_index,
-                            start_line: li
+                            start_line: line_number,
+                            column_offset,
+                        }),
+                        code,
+                    );
+                    nodes.push(node);
+                }
+                break;
+            }
+        }
+        for (index, segment) in code_block.segments.iter_mut().enumerate() {
+            segment.sequence = Some(index);
+        }
