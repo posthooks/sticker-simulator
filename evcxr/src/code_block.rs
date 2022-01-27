@@ -243,3 +243,18 @@ impl CodeBlock {
         for (index, segment) in code_block.segments.iter_mut().enumerate() {
             segment.sequence = Some(index);
         }
+        (
+            code_block,
+            UserCodeInfo {
+                nodes,
+                original_lines: user_code.lines().collect(),
+            },
+        )
+    }
+
+    pub(crate) fn command_containing_user_offset(
+        &self,
+        user_code_offset: usize,
+    ) -> Option<(&Segment, usize)> {
+        self.segments.iter().find_map(|segment| {
+            if let CodeK
