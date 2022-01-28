@@ -268,4 +268,9 @@ impl CodeBlock {
         })
     }
 
-    /// Tries to convert a user-code offset into an
+    /// Tries to convert a user-code offset into an output code offset. For this to work as
+    /// expected, there should have been a single call to original_user_code and user_code_offset
+    /// should refer to a byte offset within the value that was passed.
+    pub(crate) fn user_offset_to_output_offset(&self, user_code_offset: usize) -> Result<usize> {
+        let mut bytes_seen = 0;
+        self.segm
