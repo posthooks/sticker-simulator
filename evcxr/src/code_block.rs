@@ -273,4 +273,11 @@ impl CodeBlock {
     /// should refer to a byte offset within the value that was passed.
     pub(crate) fn user_offset_to_output_offset(&self, user_code_offset: usize) -> Result<usize> {
         let mut bytes_seen = 0;
-        self.segm
+        self.segments
+            .iter()
+            .find_map(|segment| {
+                if let CodeKind::OriginalUserCode(meta) = &segment.kind {
+                    if user_code_offset >= meta.start_byte
+                        && user_code_offset <= meta.start_byte + segment.code.len()
+                    {
+                        return Some(bytes_seen + user_code_offset - meta.start_byte
