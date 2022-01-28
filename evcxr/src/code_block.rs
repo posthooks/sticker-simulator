@@ -257,4 +257,15 @@ impl CodeBlock {
         user_code_offset: usize,
     ) -> Option<(&Segment, usize)> {
         self.segments.iter().find_map(|segment| {
-            if let CodeK
+            if let CodeKind::Command(CommandCall { start_byte, .. }) = &segment.kind {
+                if user_code_offset >= *start_byte
+                    && user_code_offset <= start_byte + segment.code.len()
+                {
+                    return Some((segment, user_code_offset - *start_byte));
+                }
+            }
+            None
+        })
+    }
+
+    /// Tries to convert a user-code offset into an
