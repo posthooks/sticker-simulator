@@ -292,4 +292,12 @@ impl CodeBlock {
     pub(crate) fn output_offset_to_user_offset(&self, output_offset: usize) -> Result<usize> {
         let mut bytes_seen = 0;
         self.segments
-        
+            .iter()
+            .find_map(|segment| {
+                if let CodeKind::OriginalUserCode(meta) = &segment.kind {
+                    if output_offset >= bytes_seen
+                        && output_offset <= bytes_seen + segment.code.len()
+                    {
+                        return Some(meta.start_byte + output_offset - bytes_seen);
+                    }
+             
