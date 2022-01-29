@@ -300,4 +300,16 @@ impl CodeBlock {
                     {
                         return Some(meta.start_byte + output_offset - bytes_seen);
                     }
-             
+                }
+                bytes_seen += segment.code.len();
+                None
+            })
+            .ok_or_else(|| anyhow!("Output offset {} doesn't refer to user code", output_offset))
+    }
+
+    pub(crate) fn load_variable(&mut self, code: String) {
+        self.segments
+            .push(Segment::new(CodeKind::OtherGeneratedCode, code));
+    }
+
+    pub(crate) fn p
