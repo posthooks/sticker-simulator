@@ -280,4 +280,16 @@ impl CodeBlock {
                     if user_code_offset >= meta.start_byte
                         && user_code_offset <= meta.start_byte + segment.code.len()
                     {
-                        return Some(bytes_seen + user_code_offset - meta.start_byte
+                        return Some(bytes_seen + user_code_offset - meta.start_byte);
+                    }
+                }
+                bytes_seen += segment.code.len();
+                None
+            })
+            .ok_or_else(|| anyhow!("Offset {} doesn't refer to user code", user_code_offset))
+    }
+
+    pub(crate) fn output_offset_to_user_offset(&self, output_offset: usize) -> Result<usize> {
+        let mut bytes_seen = 0;
+        self.segments
+        
