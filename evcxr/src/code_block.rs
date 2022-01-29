@@ -312,4 +312,15 @@ impl CodeBlock {
             .push(Segment::new(CodeKind::OtherGeneratedCode, code));
     }
 
-    pub(crate) fn p
+    pub(crate) fn pack_variable(&mut self, variable_name: String, code: String) {
+        self.segments
+            .push(Segment::new(CodeKind::PackVariable { variable_name }, code));
+    }
+
+    pub(crate) fn add_all(mut self, other: CodeBlock) -> Self {
+        self.segments.extend(other.segments);
+        self
+    }
+
+    pub(crate) fn code_string(&self) -> String {
+        let mut output =
