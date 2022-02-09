@@ -342,4 +342,13 @@ impl CodeBlock {
             if current_line_number + segment.num_lines > line_number {
                 return (&segment.kind, line_number - current_line_number);
             }
-            
+            current_line_number += segment.num_lines;
+        }
+        (&CodeKind::Unknown, 0)
+    }
+
+    pub(crate) fn apply_fallback(&mut self, fallback: &CodeBlock) {
+        let mut replacement_segments = Vec::new();
+        for segment in std::mem::take(&mut self.segments) {
+            if segment.kind.equals_fallback(fallback) {
+                replacement_segments.extend(fallback.segment
