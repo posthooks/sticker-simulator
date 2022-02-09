@@ -333,4 +333,13 @@ impl CodeBlock {
     /// Returns the segment type for the specified line (starts from 1) together
     /// with the line offset into that segment. Out-of-range indices will return
     /// type Unknown.
-    pub(crate) fn origin_for_line(&self, line_number
+    pub(crate) fn origin_for_line(&self, line_number: usize) -> (&CodeKind, usize) {
+        if line_number == 0 {
+            return (&CodeKind::Unknown, 0);
+        }
+        let mut current_line_number = 1;
+        for segment in &self.segments {
+            if current_line_number + segment.num_lines > line_number {
+                return (&segment.kind, line_number - current_line_number);
+            }
+            
