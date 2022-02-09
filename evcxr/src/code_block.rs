@@ -323,4 +323,14 @@ impl CodeBlock {
     }
 
     pub(crate) fn code_string(&self) -> String {
-        let mut output =
+        let mut output = String::new();
+        for segment in &self.segments {
+            output.push_str(&segment.code);
+        }
+        output
+    }
+
+    /// Returns the segment type for the specified line (starts from 1) together
+    /// with the line offset into that segment. Out-of-range indices will return
+    /// type Unknown.
+    pub(crate) fn origin_for_line(&self, line_number
