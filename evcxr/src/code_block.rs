@@ -351,4 +351,22 @@ impl CodeBlock {
         let mut replacement_segments = Vec::new();
         for segment in std::mem::take(&mut self.segments) {
             if segment.kind.equals_fallback(fallback) {
-                replacement_segments.extend(fallback.segment
+                replacement_segments.extend(fallback.segments.clone());
+            } else {
+                replacement_segments.push(segment);
+            }
+        }
+        self.segments = replacement_segments;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::CodeBlock;
+    use super::CodeKind;
+
+    #[test]
+    fn basic_usage() {
+        let user_code = "l3";
+        let (user_code_block, _nodes) = CodeBlock::from_original_user_code(user_code);
+        l
