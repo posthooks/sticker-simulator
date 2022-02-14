@@ -379,4 +379,11 @@ mod test {
         assert_eq!(
             code.segments
                 .iter()
-                .ma
+                .map(|s| s.num_lines)
+                .collect::<Vec<_>>(),
+            vec![2, 1, 1, 1]
+        );
+        assert_eq!(code.origin_for_line(0), (&CodeKind::Unknown, 0));
+        assert_eq!(code.origin_for_line(1), (&CodeKind::OtherGeneratedCode, 0));
+        assert_eq!(code.origin_for_line(2), (&CodeKind::OtherGeneratedCode, 1));
+        if let (CodeKind::Ori
