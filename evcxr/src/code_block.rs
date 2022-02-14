@@ -369,4 +369,14 @@ mod test {
     fn basic_usage() {
         let user_code = "l3";
         let (user_code_block, _nodes) = CodeBlock::from_original_user_code(user_code);
-        l
+        let mut code = CodeBlock::new()
+            .generated("l1\nl2")
+            .add_all(user_code_block)
+            .add_all(CodeBlock::new().generated("l4"));
+        code.pack_variable("v".to_owned(), "l5".to_owned());
+        assert_eq!(code.code_string(), "l1\nl2\nl3\nl4\nl5\n");
+        assert_eq!(code.segments.len(), 4);
+        assert_eq!(
+            code.segments
+                .iter()
+                .ma
