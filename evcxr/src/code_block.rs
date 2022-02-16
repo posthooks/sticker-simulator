@@ -395,4 +395,14 @@ mod test {
         assert_eq!(
             code.origin_for_line(5),
             (
-         
+                &CodeKind::PackVariable {
+                    variable_name: "v".to_owned()
+                },
+                0
+            )
+        );
+        assert_eq!(code.origin_for_line(6), (&CodeKind::Unknown, 0));
+
+        assert_eq!(
+            &code.code_string()[code.user_offset_to_output_offset(0).unwrap()
+                ..code.user_
