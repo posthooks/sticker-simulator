@@ -405,4 +405,8 @@ mod test {
 
         assert_eq!(
             &code.code_string()[code.user_offset_to_output_offset(0).unwrap()
-                ..code.user_
+                ..code.user_offset_to_output_offset(user_code.len()).unwrap()],
+            user_code
+        );
+    }
+}
