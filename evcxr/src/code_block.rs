@@ -386,4 +386,13 @@ mod test {
         assert_eq!(code.origin_for_line(0), (&CodeKind::Unknown, 0));
         assert_eq!(code.origin_for_line(1), (&CodeKind::OtherGeneratedCode, 0));
         assert_eq!(code.origin_for_line(2), (&CodeKind::OtherGeneratedCode, 1));
-        if let (CodeKind::Ori
+        if let (CodeKind::OriginalUserCode(meta3), 0) = code.origin_for_line(3) {
+            assert_eq!(meta3.start_byte, 0);
+        } else {
+            panic!("Unexpected result for line 3");
+        }
+        assert_eq!(code.origin_for_line(4), (&CodeKind::OtherGeneratedCode, 0));
+        assert_eq!(
+            code.origin_for_line(5),
+            (
+         
