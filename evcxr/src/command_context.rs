@@ -17,4 +17,17 @@ use crate::code_block::{self};
 use crate::crash_guard::CrashGuard;
 use crate::errors::bail;
 use crate::errors::CompilationError;
-use crate::error
+use crate::errors::Error;
+use crate::errors::Span;
+use crate::errors::SpannedMessage;
+use crate::eval_context::ContextState;
+use crate::eval_context::EvalCallbacks;
+use crate::rust_analyzer::Completion;
+use crate::rust_analyzer::Completions;
+use crate::EvalContext;
+use crate::EvalContextOutputs;
+use crate::EvalOutputs;
+use anyhow::Result;
+use once_cell::sync::OnceCell;
+
+/// A higher level interface to EvalContext. A bit closer to
