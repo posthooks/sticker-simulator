@@ -54,4 +54,13 @@ impl CommandContext {
     }
 
     #[doc(hidden)]
- 
+    pub fn new_for_testing() -> (CommandContext, EvalContextOutputs) {
+        let (eval_context, outputs) = EvalContext::new_for_testing();
+        (Self::with_eval_context(eval_context), outputs)
+    }
+
+    pub fn execute(&mut self, to_run: &str) -> Result<EvalOutputs, Error> {
+        self.execute_with_callbacks(to_run, &mut EvalCallbacks::default())
+    }
+
+    pub fn check(&mut self, code: &str) -> Re
