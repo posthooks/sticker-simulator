@@ -40,4 +40,18 @@ pub struct CommandContext {
 
 impl CommandContext {
     pub fn new() -> Result<(CommandContext, EvalContextOutputs), Error> {
-        let (eval_context, eval_context_outputs) = EvalContext:
+        let (eval_context, eval_context_outputs) = EvalContext::new()?;
+        let command_context = CommandContext::with_eval_context(eval_context);
+        Ok((command_context, eval_context_outputs))
+    }
+
+    pub fn with_eval_context(eval_context: EvalContext) -> CommandContext {
+        CommandContext {
+            print_timings: false,
+            eval_context,
+            last_errors: Vec::new(),
+        }
+    }
+
+    #[doc(hidden)]
+ 
