@@ -30,4 +30,14 @@ use crate::EvalOutputs;
 use anyhow::Result;
 use once_cell::sync::OnceCell;
 
-/// A higher level interface to EvalContext. A bit closer to
+/// A higher level interface to EvalContext. A bit closer to a Repl. Provides commands (start with
+/// ':') that alter context state or print information.
+pub struct CommandContext {
+    print_timings: bool,
+    eval_context: EvalContext,
+    last_errors: Vec<CompilationError>,
+}
+
+impl CommandContext {
+    pub fn new() -> Result<(CommandContext, EvalContextOutputs), Error> {
+        let (eval_context, eval_context_outputs) = EvalContext:
