@@ -63,4 +63,9 @@ impl CommandContext {
         self.execute_with_callbacks(to_run, &mut EvalCallbacks::default())
     }
 
-    pub fn check(&mut self, code: &str) -> Re
+    pub fn check(&mut self, code: &str) -> Result<Vec<CompilationError>, Error> {
+        let (user_code, code_info) = CodeBlock::from_original_user_code(code);
+        let (non_command_code, state, errors) = self.prepare_for_analysis(user_code)?;
+        if !errors.is_empty() {
+            // If we've got errors while preparing, probably due to bad :dep commands, then there's
+            // no point running cargo check as it'd 
