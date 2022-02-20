@@ -68,4 +68,15 @@ impl CommandContext {
         let (non_command_code, state, errors) = self.prepare_for_analysis(user_code)?;
         if !errors.is_empty() {
             // If we've got errors while preparing, probably due to bad :dep commands, then there's
-            // no point running cargo check as it'd 
+            // no point running cargo check as it'd just give us additional follow-on errors which
+            // would be confusing.
+            return Ok(errors);
+        }
+        self.eval_context.check(non_command_code, state, &code_info)
+    }
+
+    pub fn process_handle(&self) -> Arc<Mutex<std::process::Child>> {
+        self.eval_context.process_handle()
+    }
+
+    pub fn variables_and_types(&self) -> impl Iterator<Item = (&str, &str)
