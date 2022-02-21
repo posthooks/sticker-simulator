@@ -79,4 +79,19 @@ impl CommandContext {
         self.eval_context.process_handle()
     }
 
-    pub fn variables_and_types(&self) -> impl Iterator<Item = (&str, &str)
+    pub fn variables_and_types(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.eval_context.variables_and_types()
+    }
+
+    pub fn reset_config(&mut self) {
+        self.eval_context.reset_config();
+    }
+
+    pub fn defined_item_names(&self) -> impl Iterator<Item = &str> {
+        self.eval_context.defined_item_names()
+    }
+
+    pub fn execute_with_callbacks(
+        &mut self,
+        to_run: &str,
+   
