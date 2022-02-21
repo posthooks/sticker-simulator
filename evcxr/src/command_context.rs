@@ -94,4 +94,12 @@ impl CommandContext {
     pub fn execute_with_callbacks(
         &mut self,
         to_run: &str,
-   
+        callbacks: &mut EvalCallbacks,
+    ) -> Result<EvalOutputs, Error> {
+        let mut state = self.eval_context.state();
+        state.clear_non_debug_relevant_fields();
+        let mut guard = CrashGuard::new(|| {
+            eprintln!(
+                r#"
+=============================================================================
+Panic detected. Here's some useful information if you're
