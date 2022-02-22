@@ -102,4 +102,23 @@ impl CommandContext {
             eprintln!(
                 r#"
 =============================================================================
-Panic detected. Here's some useful information if you're
+Panic detected. Here's some useful information if you're filing a bug report.
+<CODE>
+{to_run}
+</CODE>
+<STATE>
+{state:?}
+</STATE>"#
+            );
+        });
+        let result = self.execute_with_callbacks_internal(to_run, callbacks);
+        guard.disarm();
+        result
+    }
+
+    fn execute_with_callbacks_internal(
+        &mut self,
+        to_run: &str,
+        callbacks: &mut EvalCallbacks,
+    ) -> Result<EvalOutputs, Error> {
+   
