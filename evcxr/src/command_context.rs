@@ -128,4 +128,16 @@ Panic detected. Here's some useful information if you're filing a bug report.
         let mut non_command_code = CodeBlock::new();
         let (user_code, code_info) = CodeBlock::from_original_user_code(to_run);
         for segment in user_code.segments {
-            if let Co
+            if let CodeKind::Command(command) = &segment.kind {
+                eval_outputs.merge(self.execute_command(
+                    command,
+                    &segment,
+                    &mut state,
+                    &command.args,
+                )?);
+            } else {
+                non_command_code = non_command_code.with_segment(segment);
+            }
+        }
+        let result =
+            sel
