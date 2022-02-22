@@ -121,4 +121,11 @@ Panic detected. Here's some useful information if you're filing a bug report.
         to_run: &str,
         callbacks: &mut EvalCallbacks,
     ) -> Result<EvalOutputs, Error> {
-   
+        use std::time::Instant;
+        let mut eval_outputs = EvalOutputs::new();
+        let start = Instant::now();
+        let mut state = self.eval_context.state();
+        let mut non_command_code = CodeBlock::new();
+        let (user_code, code_info) = CodeBlock::from_original_user_code(to_run);
+        for segment in user_code.segments {
+            if let Co
