@@ -160,4 +160,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
     }
 
     pub fn set_opt_level(&mut self, level: &str) -> Result<(), Error> {
-        self.eval_con
+        self.eval_context.set_opt_level(level)
+    }
+
+    pub fn last_source(&self) -> std::io::Result<String> {
+        self.eval_context.last_source()
+    }
+
+    /// Returns completions within `src` at `position`, which should be a byte offset. Note, this
+    /// function requires &mut self because it mutates internal state in order to determine
+    /// completions. It also assumes exclusive access t
