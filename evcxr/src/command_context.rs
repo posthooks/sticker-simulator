@@ -169,4 +169,9 @@ Panic detected. Here's some useful information if you're filing a bug report.
 
     /// Returns completions within `src` at `position`, which should be a byte offset. Note, this
     /// function requires &mut self because it mutates internal state in order to determine
-    /// completions. It also assumes exclusive access t
+    /// completions. It also assumes exclusive access to those resources. However there should be
+    /// any visible side effects.
+    pub fn completions(&mut self, src: &str, position: usize) -> Result<Completions> {
+        let (user_code, code_info) = CodeBlock::from_original_user_code(src);
+        if let Some((segment, offset)) = user_code.command_containing_user_offset(position) {
+            return self.command_completions(segment, off
