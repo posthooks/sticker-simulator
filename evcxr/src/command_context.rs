@@ -148,3 +148,16 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 eval_outputs.merge(m);
                 if self.print_timings {
                     eval_outputs.timing = Some(duration);
+                }
+                Ok(eval_outputs)
+            }
+            Err(Error::CompilationErrors(errors)) => {
+                self.last_errors = errors.clone();
+                Err(Error::CompilationErrors(errors))
+            }
+            x => x,
+        }
+    }
+
+    pub fn set_opt_level(&mut self, level: &str) -> Result<(), Error> {
+        self.eval_con
