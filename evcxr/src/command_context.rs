@@ -140,4 +140,11 @@ Panic detected. Here's some useful information if you're filing a bug report.
             }
         }
         let result =
-            sel
+            self.eval_context
+                .eval_with_callbacks(non_command_code, state, &code_info, callbacks);
+        let duration = start.elapsed();
+        match result {
+            Ok(m) => {
+                eval_outputs.merge(m);
+                if self.print_timings {
+                    eval_outputs.timing = Some(duration);
