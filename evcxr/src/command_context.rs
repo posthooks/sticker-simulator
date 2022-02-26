@@ -174,4 +174,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
     pub fn completions(&mut self, src: &str, position: usize) -> Result<Completions> {
         let (user_code, code_info) = CodeBlock::from_original_user_code(src);
         if let Some((segment, offset)) = user_code.command_containing_user_offset(position) {
-            return self.command_completions(segment, off
+            return self.command_completions(segment, offset, position);
+        }
+        let (non_command_code, state, _errors) = self.prepare_for_analysis(user_code)?;
+        self.eval_context
+            .completions(non_command_code, state, &code_info.nodes, position)
+    }
+
+    fn prepare_for_analysis(
+        &mut self,
+        user_code: CodeBlock,
+    ) -> Result<(CodeBlock, ContextState, Vec<Compilation
