@@ -191,4 +191,18 @@ Panic detected. Here's some useful information if you're filing a bug report.
         for segment in user_code.segments {
             if let CodeKind::Command(command) = &segment.kind {
                 if let Err(error) =
-                    self.process_command(command, &segment, &
+                    self.process_command(command, &segment, &mut state, &command.args, true)
+                {
+                    errors.push(error);
+                }
+            } else {
+                non_command_code = non_command_code.with_segment(segment);
+            }
+        }
+        self.eval_context.write_cargo_toml(&state)?;
+        Ok((non_command_code, state, errors))
+    }
+
+    fn command_completions(
+        &self,
+        segment: 
