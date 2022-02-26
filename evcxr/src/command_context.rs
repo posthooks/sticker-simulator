@@ -184,4 +184,11 @@ Panic detected. Here's some useful information if you're filing a bug report.
     fn prepare_for_analysis(
         &mut self,
         user_code: CodeBlock,
-    ) -> Result<(CodeBlock, ContextState, Vec<Compilation
+    ) -> Result<(CodeBlock, ContextState, Vec<CompilationError>)> {
+        let mut non_command_code = CodeBlock::new();
+        let mut state = self.eval_context.state();
+        let mut errors = Vec::new();
+        for segment in user_code.segments {
+            if let CodeKind::Command(command) = &segment.kind {
+                if let Err(error) =
+                    self.process_command(command, &segment, &
