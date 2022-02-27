@@ -205,4 +205,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
 
     fn command_completions(
         &self,
-        segment: 
+        segment: &Segment,
+        offset: usize,
+        full_position: usize,
+    ) -> Result<Completions> {
+        let existing = &segment.code[0..offset];
+        let mut completions = Completions {
+            start_offset: full_position - offset,
+            end_offset: full_position,
+            ..Completions::default()
+        };
+        for cmd in Self::commands_by_name
