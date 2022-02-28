@@ -215,4 +215,16 @@ Panic detected. Here's some useful information if you're filing a bug report.
             end_offset: full_position,
             ..Completions::default()
         };
-        for cmd in Self::commands_by_name
+        for cmd in Self::commands_by_name().keys() {
+            if cmd.starts_with(existing) {
+                completions.completions.push(Completion {
+                    code: (*cmd).to_owned(),
+                })
+            }
+        }
+        Ok(completions)
+    }
+
+    fn load_config(&mut self, quiet: bool) -> Result<EvalOutputs, Error> {
+        let mut outputs = EvalOutputs::new();
+        if let Som
