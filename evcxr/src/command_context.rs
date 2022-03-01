@@ -243,4 +243,17 @@ Panic detected. Here's some useful information if you're filing a bug report.
             let prelude_file = config_dir.join("prelude.rs");
             if prelude_file.exists() {
                 if !quiet {
-                    println!("Executing prelude fr
+                    println!("Executing prelude from {prelude_file:?}");
+                }
+                let prelude = std::fs::read_to_string(prelude_file)?;
+                outputs.merge(self.execute(&prelude)?);
+            }
+        }
+        Ok(outputs)
+    }
+
+    fn execute_command(
+        &mut self,
+        command: &CommandCall,
+        segment: &Segment,
+        state: &mut Cont
