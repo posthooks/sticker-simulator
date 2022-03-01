@@ -235,4 +235,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 }
                 let contents = std::fs::read_to_string(config_file)?;
                 for line in contents.lines() {
-                    outputs.me
+                    outputs.merge(self.execute(line)?);
+                }
+            }
+            // Note: Loaded *after* init.evcxr so that it can access `:dep`s (or
+            // any other state changed by :commands) specified in the init file.
+            let prelude_file = config_dir.join("prelude.rs");
+            if prelude_file.exists() {
+                if !quiet {
+                    println!("Executing prelude fr
