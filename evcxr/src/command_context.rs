@@ -267,4 +267,10 @@ Panic detected. Here's some useful information if you're filing a bug report.
         &mut self,
         command_call: &CommandCall,
         segment: &Segment,
-  
+        state: &mut ContextState,
+        args: &Option<String>,
+        analysis_mode: bool,
+    ) -> Result<EvalOutputs, CompilationError> {
+        if let Some(command) = Self::commands_by_name().get(command_call.command.as_str()) {
+            let result = match &command.analysis_callback {
+                Some(analysis_callback) if analysis_mode => (analysis_callback)(self, state, ar
