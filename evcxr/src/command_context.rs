@@ -256,4 +256,15 @@ Panic detected. Here's some useful information if you're filing a bug report.
         &mut self,
         command: &CommandCall,
         segment: &Segment,
-        state: &mut Cont
+        state: &mut ContextState,
+        args: &Option<String>,
+    ) -> Result<EvalOutputs, Error> {
+        self.process_command(command, segment, state, args, false)
+            .map_err(|err| Error::CompilationErrors(vec![err]))
+    }
+
+    fn process_command(
+        &mut self,
+        command_call: &CommandCall,
+        segment: &Segment,
+  
