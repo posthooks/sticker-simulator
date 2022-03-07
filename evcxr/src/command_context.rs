@@ -280,4 +280,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 // Span from the start of the arguments to the end of the arguments, or if no
                 // arguments are found, span the command. We look for the first non-space character
                 // after a space is found.
-            
+                let mut found_space = false;
+                let start_byte = segment
+                    .code
+                    .bytes()
+                    .enumerate()
+                    .find(|(_index, byte)| {
+                        if *byte == b' ' {
+                            found_space = true;
+                            return false;
+                        }
+                        fou
