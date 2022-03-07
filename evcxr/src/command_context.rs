@@ -290,4 +290,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
                             found_space = true;
                             return false;
                         }
-                        fou
+                        found_space
+                    })
+                    .map(|(index, _char)| index)
+                    .unwrap_or(0);
+                let start_column = code_block::count_columns(&segment.code[..start_byte]) + 1;
+                let end_column = code_block::count_columns(&segment.code);
+                CompilationError::from_segment_span(
+                    segment,
+                    SpannedMe
