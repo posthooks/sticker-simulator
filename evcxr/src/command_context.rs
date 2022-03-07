@@ -273,4 +273,11 @@ Panic detected. Here's some useful information if you're filing a bug report.
     ) -> Result<EvalOutputs, CompilationError> {
         if let Some(command) = Self::commands_by_name().get(command_call.command.as_str()) {
             let result = match &command.analysis_callback {
-                Some(analysis_callback) if analysis_mode => (analysis_callback)(self, state, ar
+                Some(analysis_callback) if analysis_mode => (analysis_callback)(self, state, args),
+                _ => (command.callback)(self, state, args),
+            };
+            result.map_err(|error| {
+                // Span from the start of the arguments to the end of the arguments, or if no
+                // arguments are found, span the command. We look for the first non-space character
+                // after a space is found.
+            
