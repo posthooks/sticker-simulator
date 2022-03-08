@@ -308,4 +308,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
         } else {
             Err(CompilationError::from_segment_span(
                 segment,
-                Spa
+                SpannedMessage::from_segment_span(
+                    segment,
+                    Span::from_command(
+                        command_call,
+                        1,
+                        code_block::count_columns(&command_call.command) + 1,
+                    ),
+                ),
+                format!("Unrecognised command {}", command_call.command),
+            ))
+  
