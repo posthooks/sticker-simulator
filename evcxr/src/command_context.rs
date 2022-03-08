@@ -318,4 +318,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 ),
                 format!("Unrecognised command {}", command_call.command),
             ))
-  
+        }
+    }
+
+    fn commands_by_name() -> &'static HashMap<&'static str, AvailableCommand> {
+        static COMMANDS_BY_NAME: OnceCell<HashMap<&'static str, AvailableCommand>> =
+            OnceCell::new();
+        COMMANDS_BY_NAME.get_or_init(|| {
+            CommandContext::create_commands()
+                .into_iter()
+                .map(|command| (command.name, command)
