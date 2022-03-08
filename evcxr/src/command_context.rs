@@ -298,4 +298,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 let end_column = code_block::count_columns(&segment.code);
                 CompilationError::from_segment_span(
                     segment,
-                    SpannedMe
+                    SpannedMessage::from_segment_span(
+                        segment,
+                        Span::from_command(command_call, start_column, end_column),
+                    ),
+                    error.to_string(),
+                )
+            })
+        } else {
+            Err(CompilationError::from_segment_span(
+                segment,
+                Spa
