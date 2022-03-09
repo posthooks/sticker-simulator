@@ -327,4 +327,15 @@ Panic detected. Here's some useful information if you're filing a bug report.
         COMMANDS_BY_NAME.get_or_init(|| {
             CommandContext::create_commands()
                 .into_iter()
-                .map(|command| (command.name, command)
+                .map(|command| (command.name, command))
+                .collect()
+        })
+    }
+
+    fn create_commands() -> Vec<AvailableCommand> {
+        vec![
+            AvailableCommand::new(
+                ":internal_debug",
+                "Toggle various internal debugging code",
+                |_ctx, state, _args| {
+                    let debug_mode = !state.debug_
