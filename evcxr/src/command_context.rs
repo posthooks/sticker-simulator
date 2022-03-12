@@ -354,4 +354,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 },
             )
             .disable_in_analysis(),
-            AvailableCommand::new(":version", "Print Evcxr version", |_ctx,
+            AvailableCommand::new(":version", "Print Evcxr version", |_ctx, _state, _args| {
+                text_output(env!("CARGO_PKG_VERSION"))
+            }),
+            AvailableCommand::new(
+                ":vars",
+                "List bound variables and their types",
+                |ctx, _state, _args| {
+                    Ok(EvalOutputs::text_html(
+                        ctx.vars_as_text(),
+                        ctx.vars_as_h
