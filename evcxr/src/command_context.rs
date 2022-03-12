@@ -338,4 +338,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 ":internal_debug",
                 "Toggle various internal debugging code",
                 |_ctx, state, _args| {
-                    let debug_mode = !state.debug_
+                    let debug_mode = !state.debug_mode();
+                    state.set_debug_mode(debug_mode);
+                    text_output(format!("Internals debugging: {debug_mode}"))
+                },
+            ),
+            AvailableCommand::new(
+                ":load_config",
+                "Reloads startup configuration files. Accepts optional flag `--quiet` to suppress logging.",
+                |ctx, state, args| {
+          
