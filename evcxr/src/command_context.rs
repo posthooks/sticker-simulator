@@ -347,4 +347,11 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 ":load_config",
                 "Reloads startup configuration files. Accepts optional flag `--quiet` to suppress logging.",
                 |ctx, state, args| {
-          
+                    let quiet = args.as_ref().map(String::as_str) == Some("--quiet");
+                    let result = ctx.load_config(quiet);
+                    *state = ctx.eval_context.state();
+                    result
+                },
+            )
+            .disable_in_analysis(),
+            AvailableCommand::new(":version", "Print Evcxr version", |_ctx,
