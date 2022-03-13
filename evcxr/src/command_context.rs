@@ -363,4 +363,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 |ctx, _state, _args| {
                     Ok(EvalOutputs::text_html(
                         ctx.vars_as_text(),
-                        ctx.vars_as_h
+                        ctx.vars_as_html(),
+                    ))
+                },
+            ),
+            AvailableCommand::new(
+                ":preserve_vars_on_panic",
+                "Try to keep vars on panic (0/1)",
+                |_ctx, state, args| {
+                    state
+                        .set_preserve_vars_on_panic(args.as_ref().map(String::as_str) == Some("1"))
