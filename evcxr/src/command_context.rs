@@ -372,4 +372,15 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 "Try to keep vars on panic (0/1)",
                 |_ctx, state, args| {
                     state
-                        .set_preserve_vars_on_panic(args.as_ref().map(String::as_str) == Some("1"))
+                        .set_preserve_vars_on_panic(args.as_ref().map(String::as_str) == Some("1"));
+                    text_output(format!(
+                        "Preserve vars on panic: {}",
+                        state.preserve_vars_on_panic()
+                    ))
+                },
+            ),
+            AvailableCommand::new(
+                ":clear",
+                "Clear all state, keeping compilation cache",
+                |ctx, state, _args| {
+                    ctx.eval_context
