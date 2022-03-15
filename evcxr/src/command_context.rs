@@ -383,4 +383,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 ":clear",
                 "Clear all state, keeping compilation cache",
                 |ctx, state, _args| {
-                    ctx.eval_context
+                    ctx.eval_context.clear().map(|_| {
+                        *state = ctx.eval_context.state();
+                        EvalOutputs::new()
+                    })
+                },
+            )
+            .with_analysis_callback(|ctx, state, _args| {
+                *state = ctx.eval_context.cleared_state();
+                Ok(EvalOutputs::default())
+            }),
