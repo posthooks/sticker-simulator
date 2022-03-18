@@ -411,4 +411,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 |_ctx, state, args| {
                     let new_level = if let Some(n) = args {
                         n
-        
+                    } else if state.opt_level() == "2" {
+                        "0"
+                    } else {
+                        "2"
+                    };
+                    state.set_opt_level(new_level)?;
+                    text_output(format!("Optimization: {}", state.opt_level()))
+                },
+            ),
+            AvailableCommand::new(
+             
