@@ -401,4 +401,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
             AvailableCommand::new(
                 ":last_compile_dir",
                 "Print the directory in which we last compiled",
-         
+                |ctx, _state, _args| {
+                    text_output(format!("{:?}", ctx.eval_context.last_compile_dir()))
+                },
+            ),
+            AvailableCommand::new(
+                ":opt",
+                "Set optimization level (0/1/2)",
+                |_ctx, state, args| {
+                    let new_level = if let Some(n) = args {
+                        n
+        
