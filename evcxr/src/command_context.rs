@@ -393,3 +393,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 *state = ctx.eval_context.cleared_state();
                 Ok(EvalOutputs::default())
             }),
+            AvailableCommand::new(
+                ":dep",
+                "Add dependency. e.g. :dep regex = \"1.0\"",
+                |_ctx, state, args| process_dep_command(state, args),
+            ),
+            AvailableCommand::new(
+                ":last_compile_dir",
+                "Print the directory in which we last compiled",
+         
