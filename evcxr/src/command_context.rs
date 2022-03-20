@@ -429,4 +429,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
                     text_output(format!("Output format: {}", state.output_format()))
                 },
             ),
-            AvailableC
+            AvailableCommand::new(
+                ":types",
+                "Toggle printing of types",
+                |_ctx, state, _args| {
+                    state.set_display_types(!state.display_types());
+                    text_output(format!("Types: {}", state.display_types()))
+                },
+            ),
+            AvailableCommand::new(
+                ":efmt",
+        
