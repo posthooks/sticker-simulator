@@ -421,4 +421,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 },
             ),
             AvailableCommand::new(
-             
+                ":fmt",
+                "Set output formatter (default: {:?})",
+                |_ctx, state, args| {
+                    let new_format = if let Some(f) = args { f } else { "{:?}" };
+                    state.set_output_format(new_format.to_owned());
+                    text_output(format!("Output format: {}", state.output_format()))
+                },
+            ),
+            AvailableC
