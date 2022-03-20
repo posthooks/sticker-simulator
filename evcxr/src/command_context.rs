@@ -447,4 +447,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                     text_output(format!(
                         "Error format: {} (errors must implement {})",
                         state.error_format(),
-            
+                        state.error_format_trait()
+                    ))
+                },
+            ),
+            AvailableCommand::new(
+                ":toolchain",
+                "Set which toolchain to use (e.g. nightly)",
+                |_ctx, state, args| {
+                    if let Some(arg) = args {
+                        state.set_toolchain(arg);
