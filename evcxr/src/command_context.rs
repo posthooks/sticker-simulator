@@ -439,4 +439,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
             ),
             AvailableCommand::new(
                 ":efmt",
-        
+                "Set the formatter for errors returned by ?",
+                |_ctx, state, args| {
+                    if let Some(f) = args {
+                        state.set_error_format(f)?;
+                    }
+                    text_output(format!(
+                        "Error format: {} (errors must implement {})",
+                        state.error_format(),
+            
