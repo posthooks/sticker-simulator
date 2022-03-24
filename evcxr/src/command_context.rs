@@ -457,3 +457,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 |_ctx, state, args| {
                     if let Some(arg) = args {
                         state.set_toolchain(arg);
+                    }
+                    text_output(format!("Toolchain: {}", state.toolchain()))
+                },
+            ),
+            AvailableCommand::new(
+                ":offline",
+                "Set offline mode when invoking cargo (0/1)",
+                |_ctx, state, args| {
+                    state.set_offline_mode(args.as_ref().map(String::as_str) == Some("1"));
+ 
