@@ -466,4 +466,14 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 "Set offline mode when invoking cargo (0/1)",
                 |_ctx, state, args| {
                     state.set_offline_mode(args.as_ref().map(String::as_str) == Some("1"));
- 
+                    text_output(format!("Offline mode: {}", state.offline_mode()))
+                },
+            ),
+            AvailableCommand::new(
+                ":quit",
+                "Quit evaluation and exit",
+                |_ctx, _state, _args| std::process::exit(0),
+            )
+            .disable_in_analysis(),
+            AvailableCommand::new(
+                ":timing",
