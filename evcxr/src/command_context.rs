@@ -484,4 +484,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 },
             ),
             AvailableCommand::new(
-                ":t
+                ":time_passes",
+                "Toggle printing of rustc pass times (requires nightly)",
+                |_ctx, state, _args| {
+                    state.set_time_passes(!state.time_passes());
+                    text_output(format!("Time passes: {}", state.time_passes()))
+                },
+            ),
+            AvailableCommand::new(
+                ":sccache",
+          
