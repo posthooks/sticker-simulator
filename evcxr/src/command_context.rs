@@ -493,4 +493,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
             ),
             AvailableCommand::new(
                 ":sccache",
-          
+                "Set whether to use sccache (0/1).",
+                |_ctx, state, args| {
+                    state.set_sccache(args.as_ref().map(String::as_str) != Some("0"))?;
+                    text_output(format!("sccache: {}", state.sccache()))
+                },
+            ),
+            AvailableCommand::new(
+                ":linker",
+                "Set/print link
