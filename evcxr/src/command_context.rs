@@ -477,3 +477,11 @@ Panic detected. Here's some useful information if you're filing a bug report.
             .disable_in_analysis(),
             AvailableCommand::new(
                 ":timing",
+                "Toggle printing of how long evaluations take",
+                |ctx, _state, _args| {
+                    ctx.print_timings = !ctx.print_timings;
+                    text_output(format!("Timing: {}", ctx.print_timings))
+                },
+            ),
+            AvailableCommand::new(
+                ":t
