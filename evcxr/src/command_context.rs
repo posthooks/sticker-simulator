@@ -501,4 +501,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
             ),
             AvailableCommand::new(
                 ":linker",
-                "Set/print link
+                "Set/print linker. Supported: system, lld, mold",
+                |_ctx, state, args| {
+                    if let Some(linker) = args {
+                        state.set_linker(linker.to_owned());
+                    }
+                    text_output(format!("linker: {}", state.linker()))
+                },
+            ),
+            AvailableCommand::new(
+                ":explai
