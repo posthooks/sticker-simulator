@@ -510,4 +510,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 },
             ),
             AvailableCommand::new(
-                ":explai
+                ":explain",
+                "Print explanation of last error",
+                |ctx, _state, _args| {
+                    if ctx.last_errors.is_empty() {
+                        bail!("No last error to explain");
+                    } else {
+                        let mut all_explanations = String::new();
+                        for error in &ctx.last_errors {
+                     
