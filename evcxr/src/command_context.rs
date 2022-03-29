@@ -518,4 +518,12 @@ Panic detected. Here's some useful information if you're filing a bug report.
                     } else {
                         let mut all_explanations = String::new();
                         for error in &ctx.last_errors {
-                     
+                            if let Some(explanation) = error.explanation() {
+                                all_explanations.push_str(explanation);
+                            } else {
+                                bail!("Sorry, last error has no explanation");
+                            }
+                        }
+                        text_output(all_explanations)
+                    }
+     
