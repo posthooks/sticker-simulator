@@ -526,4 +526,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                         }
                         text_output(all_explanations)
                     }
-     
+                },
+            ),
+            AvailableCommand::new(
+                ":last_error_json",
+                "Print the last compilation error as JSON (for debugging)",
+                |ctx, _state, _args| {
+                    let mut errors_out = String::new();
+                    for error in &ctx.last_errors {
+                        use std::fmt::Write;
+                        w
