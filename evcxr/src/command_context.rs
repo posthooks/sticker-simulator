@@ -535,4 +535,13 @@ Panic detected. Here's some useful information if you're filing a bug report.
                     let mut errors_out = String::new();
                     for error in &ctx.last_errors {
                         use std::fmt::Write;
-                        w
+                        write!(errors_out, "{}", error.json)?;
+                        errors_out.push('\n');
+                    }
+                    bail!(errors_out);
+                },
+            ),
+            AvailableCommand::new(":help", "Print command help", |_ctx, _state, _args| {
+                use std::fmt::Write;
+                let mut text = String::new();
+          
