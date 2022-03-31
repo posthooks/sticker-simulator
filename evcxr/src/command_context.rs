@@ -564,4 +564,16 @@ Panic detected. Here's some useful information if you're filing a bug report.
 
     fn vars_as_text(&self) -> String {
         let mut out = String::new();
-        for
+        for (var, ty) in self.eval_context.variables_and_types() {
+            out.push_str(var);
+            out.push_str(": ");
+            out.push_str(ty);
+            out.push('\n');
+        }
+        out
+    }
+
+    fn vars_as_html(&self) -> String {
+        let mut out = String::new();
+        out.push_str("<table><tr><th>Variable</th><th>Type</th></tr>");
+        for (var, ty) in self.eval_con
