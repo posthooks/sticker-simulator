@@ -551,4 +551,17 @@ Panic detected. Here's some useful information if you're filing a bug report.
                 for cmd in commands {
                     writeln!(text, "{:<17} {}", cmd.name, cmd.short_description).unwrap();
                     writeln!(
-                        htm
+                        html,
+                        "<tr><td>{}</td><td>{}</td></tr>",
+                        cmd.name, cmd.short_description
+                    )?;
+                }
+                writeln!(html, "</table>")?;
+                Ok(EvalOutputs::text_html(text, html))
+            }),
+        ]
+    }
+
+    fn vars_as_text(&self) -> String {
+        let mut out = String::new();
+        for
