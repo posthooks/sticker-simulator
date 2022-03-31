@@ -544,4 +544,11 @@ Panic detected. Here's some useful information if you're filing a bug report.
             AvailableCommand::new(":help", "Print command help", |_ctx, _state, _args| {
                 use std::fmt::Write;
                 let mut text = String::new();
-          
+                let mut html = String::new();
+                writeln!(html, "<table>")?;
+                let mut commands = CommandContext::create_commands();
+                commands.sort_by(|a, b| a.name.cmp(b.name));
+                for cmd in commands {
+                    writeln!(text, "{:<17} {}", cmd.name, cmd.short_description).unwrap();
+                    writeln!(
+                        htm
