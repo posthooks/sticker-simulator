@@ -576,4 +576,20 @@ Panic detected. Here's some useful information if you're filing a bug report.
     fn vars_as_html(&self) -> String {
         let mut out = String::new();
         out.push_str("<table><tr><th>Variable</th><th>Type</th></tr>");
-        for (var, ty) in self.eval_con
+        for (var, ty) in self.eval_context.variables_and_types() {
+            out.push_str("<tr><td>");
+            html_escape(var, &mut out);
+            out.push_str("</td><td>");
+            html_escape(ty, &mut out);
+            out.push_str("</td><tr>");
+        }
+        out.push_str("</table>");
+        out
+    }
+}
+
+fn process_dep_command(
+    state: &mut ContextState,
+    args: &Option<String>,
+) -> Result<EvalOutputs, Error> {
+    use regex::Regex;
