@@ -629,4 +629,21 @@ impl AvailableCommand {
         callback: impl Fn(
                 &mut CommandContext,
                 &mut ContextState,
-                &Opt
+                &Option<String>,
+            ) -> Result<EvalOutputs, Error>
+            + 'static
+            + Sync
+            + Send,
+    ) -> AvailableCommand {
+        AvailableCommand {
+            name,
+            short_description,
+            callback: Box::new(callback),
+            analysis_callback: None,
+        }
+    }
+
+    fn with_analysis_callback(
+        mut self,
+        callback: impl Fn(
+       
