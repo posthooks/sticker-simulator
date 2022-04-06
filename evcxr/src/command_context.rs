@@ -601,4 +601,19 @@ fn process_dep_command(
     if let Some(captures) = dep_re.captures(args) {
         state.add_dep(
             &captures[1],
-            captures.get(3).map_or("\"*\"", |m| m.as_str()
+            captures.get(3).map_or("\"*\"", |m| m.as_str()),
+        )?;
+        Ok(EvalOutputs::new())
+    } else {
+        bail!("Invalid :dep command. Expected: name = ... or just name");
+    }
+}
+
+type CallbackFn = dyn Fn(&mut CommandContext, &mut ContextState, &Option<String>) -> Result<EvalOutputs, Error>
+    + 'static
+    + Sync
+    + Send;
+
+struct AvailableCommand {
+    name: &'static str,
+    short_description: &'sta
