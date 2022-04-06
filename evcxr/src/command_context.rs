@@ -593,3 +593,12 @@ fn process_dep_command(
     args: &Option<String>,
 ) -> Result<EvalOutputs, Error> {
     use regex::Regex;
+    let Some(args) = args else {
+        bail!(":dep requires arguments")
+    };
+    static DEP_RE: OnceCell<Regex> = OnceCell::new();
+    let dep_re = DEP_RE.get_or_init(|| Regex::new("^([^= ]+) *(= *(.+))?$").unwrap());
+    if let Some(captures) = dep_re.captures(args) {
+        state.add_dep(
+            &captures[1],
+            captures.get(3).map_or("\"*\"", |m| m.as_str()
