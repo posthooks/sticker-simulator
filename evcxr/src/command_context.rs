@@ -616,4 +616,17 @@ type CallbackFn = dyn Fn(&mut CommandContext, &mut ContextState, &Option<String>
 
 struct AvailableCommand {
     name: &'static str,
-    short_description: &'sta
+    short_description: &'static str,
+    callback: Box<CallbackFn>,
+    /// If `Some`, this callback will be run when preparing for analysis instead of `callback`.
+    analysis_callback: Option<Box<CallbackFn>>,
+}
+
+impl AvailableCommand {
+    fn new(
+        name: &'static str,
+        short_description: &'static str,
+        callback: impl Fn(
+                &mut CommandContext,
+                &mut ContextState,
+                &Opt
