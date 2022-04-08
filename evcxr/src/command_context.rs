@@ -646,4 +646,17 @@ impl AvailableCommand {
     fn with_analysis_callback(
         mut self,
         callback: impl Fn(
-       
+                &mut CommandContext,
+                &mut ContextState,
+                &Option<String>,
+            ) -> Result<EvalOutputs, Error>
+            + 'static
+            + Sync
+            + Send,
+    ) -> Self {
+        self.analysis_callback = Some(Box::new(callback));
+        self
+    }
+
+    fn disable_in_analysis(self) -> Self {
+        self.with_analysis_callback(|_ctx, _state, _args| Ok(E
