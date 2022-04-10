@@ -674,4 +674,12 @@ fn html_escape(input: &str, out: &mut String) {
     }
 }
 
-fn text_output<T: Into<String>>(text: T) -> Result<Eval
+fn text_output<T: Into<String>>(text: T) -> Result<EvalOutputs, Error> {
+    let mut outputs = EvalOutputs::new();
+    let mut content = text.into();
+    content.push('\n');
+    outputs
+        .content_by_mime_type
+        .insert("text/plain".to_owned(), content);
+    Ok(outputs)
+}
