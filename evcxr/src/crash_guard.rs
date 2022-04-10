@@ -12,4 +12,21 @@ pub(crate) struct CrashGuard<F: Fn()> {
 
 impl<F: Fn()> CrashGuard<F> {
     pub(crate) fn new(callback: F) -> CrashGuard<F> {
-        CrashGuar
+        CrashGuard {
+            armed: true,
+            callback,
+        }
+    }
+
+    pub(crate) fn disarm(&mut self) {
+        self.armed = false;
+    }
+}
+
+impl<F: Fn()> Drop for CrashGuard<F> {
+    fn drop(&mut self) {
+        if self.armed {
+            (self.callback)();
+        }
+    }
+}
