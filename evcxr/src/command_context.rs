@@ -659,4 +659,19 @@ impl AvailableCommand {
     }
 
     fn disable_in_analysis(self) -> Self {
-        self.with_analysis_callback(|_ctx, _state, _args| Ok(E
+        self.with_analysis_callback(|_ctx, _state, _args| Ok(EvalOutputs::default()))
+    }
+}
+
+fn html_escape(input: &str, out: &mut String) {
+    for ch in input.chars() {
+        match ch {
+            '&' => out.push_str("&amp;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            x => out.push(x),
+        }
+    }
+}
+
+fn text_output<T: Into<String>>(text: T) -> Result<Eval
