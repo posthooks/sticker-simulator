@@ -361,3 +361,286 @@ fn build_spanned_messages(json: &JsonValue, code_block: &CodeBlock) -> Vec<Spann
         }
         let message = json["message"].as_str()?;
         Some(format!("{level}: {message}"))
+    })();
+    if let JsonValue::Array(spans) = &json["spans"] {
+        if !only_one_span || spans.len() == 1 {
+            for span_json in spans {
+                output_spans.push(SpannedMessage::from_json(
+                    span_json,
+                    code_block,
+                    level_label.clone(),
+                ));
+            }
+        }
+    }
+    if output_spans.iter().any(|s| s.span.is_some()) {
+        // If we have at least one span in the user's code, remove all spans in generated
+        // code. They'll be messages like "borrowed value only lives until here", which doesn't make
+        // sense to show to the user, since "here" is is code that they didn't write and can't see.
+        output_spans.retain(|s| s.span.is_some());
+    }
+    output_spans
+}
+
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy)]
+pub struct Span {
+    /// 1-based line number in the original user code on which the span starts (inclusive).
+    pub start_line: usize,
+    /// 1-based column (character) number in the original user code on which the span starts
+    /// (inclusive).
+    pub start_column: usize,
+    /// 1-based line number in the original user code on which the span ends (inclusive).
+    pub end_line: usize,
+    /// 1-based column (character) number in the original user code on which the span ends
+    /// (exclusive).
+    pub end_column: usize,
+}
+
+impl Span {
+    pub(crate) fn from_command(
+        command: &CommandCall,
+        start_column: usize,
+        end_column: usize,
+    ) -> Span {
+        Span {
+            start_line: command.line_number,
+            start_column,
+            end_line: command.line_number,
+            end_column,
+        }
+    }
+
+    pub(crate) fn from_segment(segment: &Segment, range: TextRange) -> Option<Span> {
+        if let CodeKind::OriginalUserCode(meta) = &segment.kind {
+            let (start_line, start_column) = line_and_column(
+                &segment.code,
+                range.start(),
+                meta.column_offset,
+                meta.start_line,
+            );
+            let (end_line, end_column) = line_and_column(
+                &segment.code,
+                range.end(),
+                meta.column_offset,
+                meta.start_line,
+            );
+            Some(Span {
+                start_line,
+                start_column,
+                end_line,
+                end_column,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+/// Returns the line and column number of `position` within `text`. Line and column numbers are
+/// 1-based.
+fn line_and_column(
+    text: &str,
+    position: TextSize,
+    first_line_column_offset: usize,
+    start_line: usize,
+) -> (usize, usize) {
+    let text = &text[..usize::from(position)];
+    let line = text.lines().count();
+    let mut column = text.lines().last().map(count_columns).unwrap_or(0) + 1;
+    if line == 1 {
+        column += first_line_column_offset;
+    }
+    (start_line + line - 1, column)
+}
+
+#[derive(Debug, Clone)]
+pub struct SpannedMessage {
+    pub span: Option<Span>,
+    /// Output lines relevant to the message.
+    pub lines: Vec<String>,
+    pub label: String,
+    pub is_primary: bool,
+}
+
+impl SpannedMessage {
+    fn from_json(
+        span_json: &JsonValue,
+        code_block: &CodeBlock,
+        fallback_label: Option<String>,
+    ) -> SpannedMessage {
+        let span = if let (Some(file_name), Some(start_column), Some(end_column)) = (
+            span_json["file_name"].as_str(),
+            span_json["column_start"].as_usize(),
+            span_json["column_end"].as_usize(),
+        ) {
+            if file_name.ends_with("lib.rs") {
+                let origins = get_code_origins_for_span(span_json, code_block);
+                if let (
+                    Some((CodeKind::OriginalUserCode(start), start_line_offset)),
+                    Some((CodeKind::OriginalUserCode(end), end_line_offset)),
+                ) = (origins.first(), origins.last())
+                {
+                    Some(Span {
+                        start_line: start.start_line + start_line_offset,
+                        start_column: start_column
+                            + (if *start_line_offset == 0 {
+                                start.column_offset
+                            } else {
+                                0
+                            }),
+                        end_line: end.start_line + end_line_offset,
+                        end_column: end_column
+                            + (if *end_line_offset == 0 {
+                                end.column_offset
+                            } else {
+                                0
+                            }),
+                    })
+                } else {
+                    // Spans within generated code won't mean anything to the user, suppress
+                    // them.
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        if span.is_none() {
+            let expansion_span_json = &span_json["expansion"]["span"];
+            if !expansion_span_json.is_empty() {
+                let mut message = SpannedMessage::from_json(expansion_span_json, code_block, None);
+                if message.span.is_some() {
+                    if let Some(label) = span_json["label"].as_str() {
+                        message.label = label.to_owned();
+                    }
+                    message.is_primary |= span_json["is_primary"].as_bool().unwrap_or(false);
+                    return message;
+                }
+            }
+        }
+        let mut label = span_json["label"]
+            .as_str()
+            .map(|s| s.to_owned())
+            .or(fallback_label)
+            .unwrap_or_default();
+        if let Some(replace) = span_json["suggested_replacement"].as_str() {
+            let _ = write!(&mut label, ": `{replace}`");
+        }
+        SpannedMessage {
+            span,
+            lines: Vec::new(),
+            label,
+            is_primary: span_json["is_primary"].as_bool().unwrap_or(false),
+        }
+    }
+
+    pub(crate) fn from_segment_span(segment: &Segment, span: Span) -> SpannedMessage {
+        SpannedMessage {
+            span: Some(span),
+            lines: segment.code.lines().map(|line| line.to_owned()).collect(),
+            label: String::new(),
+            is_primary: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum Error {
+    CompilationErrors(Vec<CompilationError>),
+    TypeRedefinedVariablesLost(Vec<String>),
+    Message(String),
+    SubprocessTerminated(String),
+}
+
+impl std::error::Error for Error {}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::CompilationErrors(errors) => {
+                for error in errors {
+                    write!(f, "{}", error.message())?;
+                }
+            }
+            Error::TypeRedefinedVariablesLost(variables) => {
+                write!(
+                    f,
+                    "A type redefinition resulted in the following variables being lost: {}",
+                    variables.join(", ")
+                )?;
+            }
+            Error::Message(message) | Error::SubprocessTerminated(message) => {
+                write!(f, "{message}")?
+            }
+        }
+        Ok(())
+    }
+}
+
+impl From<std::fmt::Error> for Error {
+    fn from(error: std::fmt::Error) -> Self {
+        Error::Message(error.to_string())
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(error: io::Error) -> Self {
+        Error::Message(error.to_string())
+    }
+}
+
+impl From<json::Error> for Error {
+    fn from(error: json::Error) -> Self {
+        Error::Message(error.to_string())
+    }
+}
+
+impl<'a> From<&'a io::Error> for Error {
+    fn from(error: &'a io::Error) -> Self {
+        Error::Message(error.to_string())
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(error: std::str::Utf8Error) -> Self {
+        Error::Message(error.to_string())
+    }
+}
+
+impl From<String> for Error {
+    fn from(message: String) -> Self {
+        Error::Message(message)
+    }
+}
+
+impl<'a> From<&'a str> for Error {
+    fn from(message: &str) -> Self {
+        Error::Message(message.to_owned())
+    }
+}
+
+impl From<anyhow::Error> for Error {
+    fn from(error: anyhow::Error) -> Self {
+        Error::Message(error.to_string())
+    }
+}
+
+impl From<libloading::Error> for Error {
+    fn from(error: libloading::Error) -> Self {
+        Error::Message(error.to_string())
+    }
+}
+
+macro_rules! _err {
+    ($e:expr) => {$crate::Error::from($e)};
+    ($fmt:expr, $($arg:tt)+) => {$crate::errors::Error::from(format!($fmt, $($arg)+))}
+}
+pub(crate) use _err as err;
+
+macro_rules! _bail {
+    ($($arg:tt)+) => {return Err($crate::errors::err!($($arg)+))}
+}
+pub(crate) use _bail as bail;
