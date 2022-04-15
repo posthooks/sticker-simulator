@@ -440,3 +440,405 @@ impl EvalContext {
             error @ Err(_) => return error,
             Ok(x) => x,
         };
+
+        // Once, we reach here, our code has successfully executed, so we
+        // conclude that variable changes are now applied.
+        self.commit_state(state);
+
+        phases.phase_complete("Execution");
+        outputs.phases = phases.phases;
+
+        Ok(outputs)
+    }
+
+    pub(crate) fn completions(
+        &mut self,
+        user_code: CodeBlock,
+        mut state: ContextState,
+        nodes: &[SyntaxNode],
+        offset: usize,
+    ) -> Result<Completions> {
+        // Wrapping the final expression in order to display it might interfere
+        // with completions on that final expression.
+        state.config.display_final_expression = false;
+        // Expanding use statements would prevent us from tab-completing those
+        // use statements, since we lose information about where each bit came
+        // from when we expand. This could be fixed with some work, but there's
+        // not really any downside to turn it off here. It'll produce errors,
+        // but those errors don't effect the analysis needed for completions.
+        state.config.expand_use_statements = false;
+        let user_code = state.apply(user_code, nodes)?;
+        let code = state.analysis_code(user_code);
+        let wrapped_offset = code.user_offset_to_output_offset(offset)?;
+
+        if state.config.debug_mode {
+            let mut s = code.code_string();
+            s.insert_str(wrapped_offset, "<|>");
+            println!("=========\n{s}\n==========");
+        }
+
+        self.analyzer.set_source(code.code_string())?;
+        let mut completions = self.analyzer.completions(wrapped_offset)?;
+        completions.start_offset = code.output_offset_to_user_offset(completions.start_offset)?;
+        completions.end_offset = code.output_offset_to_user_offset(completions.end_offset)?;
+        // Filter internal identifiers.
+        completions.completions.retain(|c| {
+            c.code != "evcxr_variable_store"
+                && c.code != "evcxr_internal_runtime"
+                && c.code != "evcxr_analysis_wrapper"
+        });
+        Ok(completions)
+    }
+
+    pub fn last_source(&self) -> Result<String, std::io::Error> {
+        self.module.last_source()
+    }
+
+    pub fn set_opt_level(&mut self, level: &str) -> Result<(), Error> {
+        self.committed_state.set_opt_level(level)
+    }
+
+    pub fn set_time_passes(&mut self, value: bool) {
+        self.committed_state.set_time_passes(value);
+    }
+
+    pub fn set_preserve_vars_on_panic(&mut self, value: bool) {
+        self.committed_state.set_preserve_vars_on_panic(value);
+    }
+
+    pub fn set_error_format(&mut self, value: &str) -> Result<(), Error> {
+        self.committed_state.set_error_format(value)
+    }
+
+    pub fn variables_and_types(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.committed_state
+            .variable_states
+            .iter()
+            .map(|(v, t)| (v.as_str(), t.type_name.as_str()))
+    }
+
+    pub fn defined_item_names(&self) -> impl Iterator<Item = &str> {
+        self.committed_state
+            .items_by_name
+            .keys()
+            .map(String::as_str)
+    }
+
+    // Clears all state, while keeping tmpdir. This allows us to effectively
+    // restart, but without having to recompile any external crates we'd already
+    // compiled. Config is preserved.
+    pub fn clear(&mut self) -> Result<(), Error> {
+        self.committed_state = self.cleared_state();
+        self.restart_child_process()
+    }
+
+    /// Returns the state that would result from clearing. Config is preserved. Nothing is done to
+    /// the subprocess.
+    pub(crate) fn cleared_state(&self) -> ContextState {
+        ContextState::new(self.committed_state.config.clone())
+    }
+
+    pub fn reset_config(&mut self) {
+        self.committed_state.config = self.initial_config.clone();
+    }
+
+    pub fn process_handle(&self) -> Arc<Mutex<std::process::Child>> {
+        self.child_process.process_handle()
+    }
+
+    fn restart_child_process(&mut self) -> Result<(), Error> {
+        self.committed_state.variable_states.clear();
+        self.committed_state.stored_variable_states.clear();
+        self.child_process = self.child_process.restart()?;
+        Ok(())
+    }
+
+    pub(crate) fn last_compile_dir(&self) -> &Path {
+        self.module.crate_dir()
+    }
+
+    fn commit_state(&mut self, mut state: ContextState) {
+        for variable_state in state.variable_states.values_mut() {
+            // This span only makes sense when the variable is first defined.
+            variable_state.definition_span = None;
+        }
+        state.stored_variable_states = state.variable_states.clone();
+        state.commit_old_user_code();
+        self.committed_state = state;
+    }
+
+    fn run_statements(
+        &mut self,
+        mut user_code: CodeBlock,
+        state: &mut ContextState,
+        phases: &mut PhaseDetailsBuilder,
+        callbacks: &mut EvalCallbacks,
+    ) -> Result<EvalOutputs, Error> {
+        self.write_cargo_toml(state)?;
+        self.fix_variable_types(state, state.analysis_code(user_code.clone()))?;
+        // In some circumstances we may need a few tries before we get the code right. Note that
+        // we'll generally give up sooner than this if there's nothing left that we think we can
+        // fix. The limit is really to prevent retrying indefinitely in case our "fixing" of things
+        // somehow ends up flip-flopping back and forth. Not sure how that could happen, but best to
+        // avoid any infinite loops.
+        let mut remaining_retries = 5;
+        // TODO: Now that we have rust analyzer, we can probably with a bit of work obtain all the
+        // information we need without relying on compilation errors. See if we can get rid of this.
+        loop {
+            // Try to compile and run the code.
+            let result = self.try_run_statements(
+                user_code.clone(),
+                state,
+                state.compilation_mode(),
+                phases,
+                callbacks,
+            );
+            match result {
+                Ok(execution_artifacts) => {
+                    return Ok(execution_artifacts.output);
+                }
+
+                Err(Error::CompilationErrors(errors)) => {
+                    // If we failed to compile, attempt to deal with the first
+                    // round of compilation errors by adjusting variable types,
+                    // whether they've been moved into the catch_unwind block
+                    // etc.
+                    if remaining_retries > 0 {
+                        let mut fixed = HashSet::new();
+                        for error in &errors {
+                            self.attempt_to_fix_error(error, &mut user_code, state, &mut fixed)?;
+                        }
+                        if !fixed.is_empty() {
+                            remaining_retries -= 1;
+                            let fixed_sorted: Vec<_> = fixed.into_iter().collect();
+                            phases.phase_complete(&fixed_sorted.join("|"));
+                            continue;
+                        }
+                    }
+                    if !user_code.is_empty() {
+                        // We have user code and it appears to have an error, recompile without
+                        // catch_unwind to try and get a better error message. e.g. we don't want the
+                        // user to see messages like "cannot borrow immutable captured outer variable in
+                        // an `FnOnce` closure `a` as mutable".
+                        self.try_run_statements(
+                            user_code,
+                            state,
+                            CompilationMode::NoCatchExpectError,
+                            phases,
+                            callbacks,
+                        )?;
+                    }
+                    return Err(Error::CompilationErrors(errors));
+                }
+
+                Err(Error::TypeRedefinedVariablesLost(variables)) => {
+                    for variable in &variables {
+                        state.variable_states.remove(variable);
+                        state.stored_variable_states.remove(variable);
+                        self.committed_state.variable_states.remove(variable);
+                        self.committed_state.stored_variable_states.remove(variable);
+                    }
+                    remaining_retries -= 1;
+                }
+                Err(error) => return Err(error),
+            }
+        }
+    }
+
+    fn try_run_statements(
+        &mut self,
+        user_code: CodeBlock,
+        state: &mut ContextState,
+        compilation_mode: CompilationMode,
+        phases: &mut PhaseDetailsBuilder,
+        callbacks: &mut EvalCallbacks,
+    ) -> Result<ExecutionArtifacts, Error> {
+        let code = state.code_to_compile(user_code, compilation_mode);
+        let so_file = self.module.compile(&code, &state.config)?;
+
+        if compilation_mode == CompilationMode::NoCatchExpectError {
+            // Uh-oh, caller was expecting an error, return OK and the caller can return the
+            // original error.
+            return Ok(ExecutionArtifacts {
+                output: EvalOutputs::new(),
+            });
+        }
+        phases.phase_complete("Final compile");
+
+        let output = self.run_and_capture_output(state, &so_file, callbacks)?;
+        Ok(ExecutionArtifacts { output })
+    }
+
+    pub(crate) fn write_cargo_toml(&self, state: &ContextState) -> Result<()> {
+        self.module.write_cargo_toml(state)?;
+        self.module.write_config_toml(state)?;
+        Ok(())
+    }
+
+    fn fix_variable_types(
+        &mut self,
+        state: &mut ContextState,
+        code: CodeBlock,
+    ) -> Result<(), Error> {
+        self.analyzer.set_source(code.code_string())?;
+        for (
+            variable_name,
+            VariableInfo {
+                type_name,
+                is_mutable,
+            },
+        ) in self.analyzer.top_level_variables("evcxr_analysis_wrapper")
+        {
+            // We don't want to try to store record evcxr_variable_store into itself, so we ignore
+            // it.
+            if variable_name == "evcxr_variable_store" {
+                continue;
+            }
+            let type_name = match type_name {
+                TypeName::Named(x) => x,
+                TypeName::Closure => bail!(
+                    "The variable `{}` is a closure, which cannot be persisted.\n\
+                     You can however persist closures if you box them. e.g.:\n\
+                     let f: Box<dyn Fn()> = Box::new(|| {{println!(\"foo\")}});\n\
+                     Alternatively, you can prevent evcxr from attempting to persist\n\
+                     the variable by wrapping your code in braces.",
+                    variable_name
+                ),
+                TypeName::Unknown => bail!(
+                    "Couldn't automatically determine type of variable `{}`.\n\
+                     Please give it an explicit type.",
+                    variable_name
+                ),
+            };
+            // For now, we need to look for and escape any reserved words. This should probably in
+            // theory be done in rust analyzer in a less hacky way.
+            let type_name = replace_reserved_words_in_type(&type_name);
+            state
+                .variable_states
+                .entry(variable_name)
+                .or_insert_with(|| VariableState {
+                    type_name: String::new(),
+                    is_mut: is_mutable,
+                    move_state: VariableMoveState::New,
+                    definition_span: None,
+                })
+                .type_name = type_name;
+        }
+        Ok(())
+    }
+
+    fn run_and_capture_output(
+        &mut self,
+        state: &mut ContextState,
+        so_file: &SoFile,
+        callbacks: &mut EvalCallbacks,
+    ) -> Result<EvalOutputs, Error> {
+        let mut output = EvalOutputs::new();
+        // TODO: We should probably send an OsString not a String. Otherwise
+        // things won't work if the path isn't UTF-8 - apparently that's a thing
+        // on some platforms.
+        let fn_name = state.current_user_fn_name();
+        self.child_process.send(&format!(
+            "LOAD_AND_RUN {} {}",
+            so_file.path.to_string_lossy(),
+            fn_name,
+        ))?;
+
+        state.build_num += 1;
+
+        let mut got_panic = false;
+        let mut lost_variables = Vec::new();
+        static MIME_OUTPUT: OnceCell<Regex> = OnceCell::new();
+        let mime_output =
+            MIME_OUTPUT.get_or_init(|| Regex::new("EVCXR_BEGIN_CONTENT ([^ ]+)").unwrap());
+        loop {
+            let line = self.child_process.recv_line()?;
+            if line == runtime::EVCXR_EXECUTION_COMPLETE {
+                break;
+            }
+            if line == PANIC_NOTIFICATION {
+                got_panic = true;
+            } else if line.starts_with(evcxr_input::GET_CMD) {
+                let is_password = line.starts_with(evcxr_input::GET_CMD_PASSWORD);
+                let prompt = line.split(':').nth(1).unwrap_or_default().to_owned();
+                self.child_process
+                    .send(&(callbacks.input_reader)(InputRequest {
+                        prompt,
+                        is_password,
+                    }))?;
+            } else if line == evcxr_internal_runtime::USER_ERROR_OCCURRED {
+                // A question mark operator in user code triggered an early
+                // return. Any newly defined variables won't have been stored.
+                state
+                    .variable_states
+                    .retain(|_variable_name, variable_state| {
+                        variable_state.move_state != VariableMoveState::New
+                    });
+            } else if let Some(variable_name) =
+                line.strip_prefix(evcxr_internal_runtime::VARIABLE_CHANGED_TYPE)
+            {
+                lost_variables.push(variable_name.to_owned());
+            } else if let Some(captures) = mime_output.captures(&line) {
+                let mime_type = captures[1].to_owned();
+                let mut content = String::new();
+                loop {
+                    let line = self.child_process.recv_line()?;
+                    if line == "EVCXR_END_CONTENT" {
+                        break;
+                    }
+                    if line == PANIC_NOTIFICATION {
+                        got_panic = true;
+                        break;
+                    }
+                    if !content.is_empty() {
+                        content.push('\n');
+                    }
+                    content.push_str(&line);
+                }
+                output.content_by_mime_type.insert(mime_type, content);
+            } else {
+                // Note, errors sending are ignored, since it just means the
+                // user of the library has dropped the Receiver.
+                let _ = self.stdout_sender.send(line);
+            }
+        }
+        if got_panic {
+            state
+                .variable_states
+                .retain(|_variable_name, variable_state| {
+                    variable_state.move_state != VariableMoveState::New
+                });
+        } else if !lost_variables.is_empty() {
+            return Err(Error::TypeRedefinedVariablesLost(lost_variables));
+        }
+        Ok(output)
+    }
+
+    fn attempt_to_fix_error(
+        &mut self,
+        error: &CompilationError,
+        user_code: &mut CodeBlock,
+        state: &mut ContextState,
+        fixed_errors: &mut HashSet<&'static str>,
+    ) -> Result<(), Error> {
+        for code_origin in &error.code_origins {
+            match code_origin {
+                CodeKind::PackVariable { variable_name } => {
+                    if error.code() == Some("E0382") {
+                        // Use of moved value.
+                        state.variable_states.remove(variable_name);
+                        fixed_errors.insert("Captured value");
+                    } else if error.code() == Some("E0425") {
+                        // cannot find value in scope.
+                        state.variable_states.remove(variable_name);
+                        fixed_errors.insert("Variable moved");
+                    } else if error.code() == Some("E0603") {
+                        if let Some(variable_state) = state.variable_states.remove(variable_name) {
+                            bail!(
+                                "Failed to determine type of variable `{}`. rustc suggested type \
+                             {}, but that's private. Sometimes adding an extern crate will help \
+                             rustc suggest the correct public type name, or you can give an \
+                             explicit type.",
+                                variable_name,
+                                variable_state.type_name
+                            );
