@@ -842,3 +842,367 @@ impl EvalContext {
                                 variable_name,
                                 variable_state.type_name
                             );
+                        }
+                    } else if error.code() == Some("E0562")
+                        || (error.code().is_none() && error.code_origins.len() == 1)
+                    {
+                        return non_persistable_type_error(
+                            variable_name,
+                            &state.variable_states[variable_name].type_name,
+                        );
+                    }
+                }
+                CodeKind::WithFallback(fallback) => {
+                    user_code.apply_fallback(fallback);
+                    fixed_errors.insert("Fallback");
+                }
+                CodeKind::OriginalUserCode(_) | CodeKind::OtherUserCode => {
+                    if error.code() == Some("E0728") && !state.async_mode {
+                        state.async_mode = true;
+                        if !state.external_deps.contains_key("tokio") {
+                            state.add_dep("tokio", "\"1.20.1\"")?;
+                            // Rewrite Cargo.toml, since the dependency will probably have been
+                            // validated in the process of being added, which will have overwritten
+                            // Cargo.toml
+                            self.write_cargo_toml(state)?;
+                        }
+                        fixed_errors.insert("Enabled async mode");
+                    } else if error.code() == Some("E0277") && !state.allow_question_mark {
+                        state.allow_question_mark = true;
+                        fixed_errors.insert("Allow question mark");
+                    } else if error.code() == Some("E0658")
+                        && error
+                            .message()
+                            .contains("`let` expressions in this position are experimental")
+                    {
+                        // PR to add a semicolon is welcome. Ideally we'd not do so here though. It
+                        // should really be done based on the parse tree of the code. We currently
+                        // have two parsers, syn and rust-analyzer. We'd like to eventually get rid
+                        // of syn and just user rust-analyzer, but the code that could potentially
+                        // add a semicolon currently uses syn. So ideally we'd replace uses of syn
+                        // with rust-analyzer before adding new parse-tree based rules. But PRs that
+                        // just use syn to determine when to add a semicolon would also be OK.
+                        bail!("Looks like you're missing a semicolon");
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+}
+
+fn non_persistable_type_error(variable_name: &str, actual_type: &str) -> Result<(), Error> {
+    bail!(
+        "The variable `{}` has type `{}` which cannot be persisted.\n\
+             You might be able to fix this by creating a `Box<dyn YourType>`. e.g.\n\
+             let v: Box<dyn core::fmt::Debug> = Box::new(foo());\n\
+             Alternatively, you can prevent evcxr from attempting to persist\n\
+             the variable by wrapping your code in braces.",
+        variable_name,
+        actual_type
+    );
+}
+
+fn fix_path() {
+    // If cargo isn't on our path, see if it exists in the same directory as
+    // our executable and if it does, add that directory to our PATH.
+    if which::which("cargo").is_err() {
+        if let Ok(current_exe) = std::env::current_exe() {
+            if let Some(bin_dir) = current_exe.parent() {
+                if bin_dir.join("cargo").exists() {
+                    if let Some(mut path) = std::env::var_os("PATH") {
+                        if cfg!(windows) {
+                            path.push(";");
+                        } else {
+                            path.push(":");
+                        }
+                        path.push(bin_dir);
+                        std::env::set_var("PATH", path);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Returns whether a type is fully specified. i.e. it doesn't contain any '_'.
+fn type_is_fully_specified(ty: &ast::Type) -> bool {
+    !AstNode::syntax(ty)
+        .descendants()
+        .any(|n| n.kind() == SyntaxKind::INFER_TYPE)
+}
+
+#[derive(Debug)]
+pub struct PhaseDetails {
+    pub name: String,
+    pub duration: Duration,
+}
+
+struct PhaseDetailsBuilder {
+    start: Instant,
+    phases: Vec<PhaseDetails>,
+}
+
+impl PhaseDetailsBuilder {
+    fn new() -> PhaseDetailsBuilder {
+        PhaseDetailsBuilder {
+            start: Instant::now(),
+            phases: Vec::new(),
+        }
+    }
+
+    fn phase_complete(&mut self, name: &str) {
+        let new_start = Instant::now();
+        self.phases.push(PhaseDetails {
+            name: name.to_owned(),
+            duration: new_start.duration_since(self.start),
+        });
+        self.start = new_start;
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct EvalOutputs {
+    pub content_by_mime_type: HashMap<String, String>,
+    pub timing: Option<Duration>,
+    pub phases: Vec<PhaseDetails>,
+}
+
+impl EvalOutputs {
+    pub fn new() -> EvalOutputs {
+        EvalOutputs {
+            content_by_mime_type: HashMap::new(),
+            timing: None,
+            phases: Vec::new(),
+        }
+    }
+
+    pub fn text_html(text: String, html: String) -> EvalOutputs {
+        let mut out = EvalOutputs::new();
+        out.content_by_mime_type
+            .insert("text/plain".to_owned(), text);
+        out.content_by_mime_type
+            .insert("text/html".to_owned(), html);
+        out
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.content_by_mime_type.is_empty()
+    }
+
+    pub fn get(&self, mime_type: &str) -> Option<&str> {
+        self.content_by_mime_type.get(mime_type).map(String::as_str)
+    }
+
+    pub fn merge(&mut self, mut other: EvalOutputs) {
+        for (mime_type, content) in other.content_by_mime_type {
+            self.content_by_mime_type
+                .entry(mime_type)
+                .or_default()
+                .push_str(&content);
+        }
+        self.timing = match (self.timing.take(), other.timing) {
+            (Some(t1), Some(t2)) => Some(t1 + t2),
+            (t1, t2) => t1.or(t2),
+        };
+        self.phases.append(&mut other.phases);
+    }
+}
+
+#[derive(Clone, Debug)]
+struct VariableState {
+    type_name: String,
+    is_mut: bool,
+    move_state: VariableMoveState,
+    definition_span: Option<UserCodeSpan>,
+}
+
+#[derive(Clone, Debug)]
+struct UserCodeSpan {
+    segment_index: usize,
+    range: TextRange,
+}
+
+#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+enum VariableMoveState {
+    New,
+    Available,
+}
+
+struct ExecutionArtifacts {
+    output: EvalOutputs,
+}
+
+#[derive(Eq, PartialEq, Copy, Clone)]
+enum CompilationMode {
+    /// User code should be wrapped in catch_unwind and executed.
+    RunAndCatchPanics,
+    /// User code should be executed without a catch_unwind.
+    NoCatch,
+    /// Recompile without catch_unwind to try to get better error messages. If compilation succeeds
+    /// (hopefully can't happen), don't run the code - caller should return the original message.
+    NoCatchExpectError,
+}
+
+/// State that is cloned then modified every time we try to compile some code. If compilation
+/// succeeds, we keep the modified state, if it fails, we revert to the old state.
+#[derive(Clone, Debug)]
+pub struct ContextState {
+    items_by_name: HashMap<String, CodeBlock>,
+    unnamed_items: Vec<CodeBlock>,
+    pub(crate) external_deps: HashMap<String, ExternalCrate>,
+    // Keyed by crate name. Could use a set, except that the statement might be
+    // formatted slightly differently.
+    extern_crate_stmts: HashMap<String, String>,
+    /// States of variables. Includes variables that have just been defined by
+    /// the code about to be executed.
+    variable_states: HashMap<String, VariableState>,
+    /// State of variables that have been stored. i.e. after the last bit of
+    /// code was executed. Doesn't include newly defined variables until after
+    /// execution completes.
+    stored_variable_states: HashMap<String, VariableState>,
+    attributes: HashMap<String, CodeBlock>,
+    async_mode: bool,
+    allow_question_mark: bool,
+    build_num: i32,
+    config: Config,
+}
+
+impl ContextState {
+    fn new(config: Config) -> ContextState {
+        ContextState {
+            items_by_name: HashMap::new(),
+            unnamed_items: vec![],
+            external_deps: HashMap::new(),
+            extern_crate_stmts: HashMap::new(),
+            variable_states: HashMap::new(),
+            stored_variable_states: HashMap::new(),
+            attributes: HashMap::new(),
+            async_mode: false,
+            allow_question_mark: false,
+            build_num: 0,
+            config,
+        }
+    }
+
+    pub fn time_passes(&self) -> bool {
+        self.config.time_passes
+    }
+
+    pub fn set_time_passes(&mut self, value: bool) {
+        self.config.time_passes = value;
+    }
+
+    pub fn set_offline_mode(&mut self, value: bool) {
+        self.config.offline_mode = value;
+    }
+
+    pub fn set_sccache(&mut self, enabled: bool) -> Result<(), Error> {
+        self.config.set_sccache(enabled)
+    }
+
+    pub fn sccache(&self) -> bool {
+        self.config.sccache()
+    }
+
+    pub fn set_error_format(&mut self, format_str: &str) -> Result<(), Error> {
+        for format in ERROR_FORMATS {
+            if format.format_str == format_str {
+                self.config.error_fmt = format;
+                return Ok(());
+            }
+        }
+        bail!(
+            "Unsupported error format string. Available options: {}",
+            ERROR_FORMATS
+                .iter()
+                .map(|f| f.format_str)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+    }
+
+    pub fn error_format(&self) -> &str {
+        self.config.error_fmt.format_str
+    }
+
+    pub fn error_format_trait(&self) -> &str {
+        self.config.error_fmt.format_trait
+    }
+
+    pub fn set_linker(&mut self, linker: String) {
+        self.config.linker = linker;
+    }
+
+    pub fn linker(&self) -> &str {
+        &self.config.linker
+    }
+
+    pub fn preserve_vars_on_panic(&self) -> bool {
+        self.config.preserve_vars_on_panic
+    }
+
+    pub fn offline_mode(&self) -> bool {
+        self.config.offline_mode
+    }
+
+    pub fn set_preserve_vars_on_panic(&mut self, value: bool) {
+        self.config.preserve_vars_on_panic = value;
+    }
+
+    pub fn debug_mode(&self) -> bool {
+        self.config.debug_mode
+    }
+
+    pub fn set_debug_mode(&mut self, debug_mode: bool) {
+        self.config.debug_mode = debug_mode;
+    }
+
+    pub fn opt_level(&self) -> &str {
+        &self.config.opt_level
+    }
+
+    pub fn set_opt_level(&mut self, level: &str) -> Result<(), Error> {
+        if level.is_empty() {
+            bail!("Optimization level cannot be an empty string");
+        }
+        self.config.opt_level = level.to_owned();
+        Ok(())
+    }
+    pub fn output_format(&self) -> &str {
+        &self.config.output_format
+    }
+
+    pub fn set_output_format(&mut self, output_format: String) {
+        self.config.output_format = output_format;
+    }
+
+    pub fn display_types(&self) -> bool {
+        self.config.display_types
+    }
+
+    pub fn set_display_types(&mut self, display_types: bool) {
+        self.config.display_types = display_types;
+    }
+
+    pub fn set_toolchain(&mut self, value: &str) {
+        self.config.toolchain = value.to_owned();
+    }
+
+    pub fn toolchain(&mut self) -> &str {
+        &self.config.toolchain
+    }
+
+    /// Adds a crate dependency with the specified name and configuration.
+    pub fn add_dep(&mut self, dep: &str, dep_config: &str) -> Result<(), Error> {
+        // Avoid repeating dep validation once we're already added it.
+        if let Some(existing) = self.external_deps.get(dep) {
+            if existing.config == dep_config {
+                return Ok(());
+            }
+        }
+        let external = ExternalCrate::new(dep.to_owned(), dep_config.to_owned())?;
+        crate::cargo_metadata::validate_dep(&external.name, &external.config, &self.config)?;
+        self.external_deps.insert(dep.to_owned(), external);
+        Ok(())
