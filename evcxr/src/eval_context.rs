@@ -1206,3 +1206,393 @@ impl ContextState {
         crate::cargo_metadata::validate_dep(&external.name, &external.config, &self.config)?;
         self.external_deps.insert(dep.to_owned(), external);
         Ok(())
+    }
+
+    /// Clears fields that aren't useful for inclusion in bug reports and which might give away
+    /// things like usernames.
+    pub(crate) fn clear_non_debug_relevant_fields(&mut self) {
+        self.config.crate_dir = PathBuf::from("redacted");
+        if self.config.sccache.is_some() {
+            self.config.sccache = Some(PathBuf::from("redacted"));
+        }
+    }
+
+    fn apply_custom_errors(
+        &self,
+        errors: Vec<CompilationError>,
+        user_code: &CodeBlock,
+        code_info: &UserCodeInfo,
+    ) -> Vec<CompilationError> {
+        errors
+            .into_iter()
+            .filter_map(|error| self.customize_error(error, user_code))
+            .map(|mut error| {
+                error.fill_lines(code_info);
+                error
+            })
+            .collect()
+    }
+
+    /// Customizes errors based on their origins.
+    fn customize_error(
+        &self,
+        error: CompilationError,
+        user_code: &CodeBlock,
+    ) -> Option<CompilationError> {
+        for origin in &error.code_origins {
+            if let CodeKind::PackVariable { variable_name } = origin {
+                if let Some(definition_span) = &self.variable_states[variable_name].definition_span
+                {
+                    if let Some(segment) =
+                        user_code.segment_with_index(definition_span.segment_index)
+                    {
+                        if let Some(span) = Span::from_segment(segment, definition_span.range) {
+                            return self.replacement_for_pack_variable_error(
+                                variable_name,
+                                span,
+                                segment,
+                                &error,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        Some(error)
+    }
+
+    fn replacement_for_pack_variable_error(
+        &self,
+        variable_name: &str,
+        variable_span: Span,
+        segment: &Segment,
+        error: &CompilationError,
+    ) -> Option<CompilationError> {
+        let message = match error.code().unwrap_or("") {
+            "E0382" | "E0505" => {
+                // Value used after move. When we go to execute the code, we'll detect this error and
+                // remove the variable so it doesn't get stored.
+                return None;
+            }
+            "E0597" => {
+                format!(
+                    "The variable `{variable_name}` contains a reference with a non-static lifetime so\n\
+                    can't be persisted. You can prevent this error by making sure that the\n\
+                    variable goes out of scope - i.e. wrapping the code in {{}}."
+                )
+            }
+            _ => {
+                return Some(error.clone());
+            }
+        };
+        Some(CompilationError::from_segment_span(
+            segment,
+            SpannedMessage::from_segment_span(segment, variable_span),
+            message,
+        ))
+    }
+
+    /// Returns whether transitioning to `new_state` might cause compilation
+    /// failures. e.g. if `new_state` has extra dependencies, then we must
+    /// return true. If we return false, we're saying that the proposed state
+    /// change cannot cause compilation failures, so compilation can be skipped
+    /// if there is otherwise no code to execute.
+    fn state_change_can_fail_compilation(&self, new_state: &ContextState) -> bool {
+        (self.extern_crate_stmts != new_state.extern_crate_stmts
+            && !new_state.extern_crate_stmts.is_empty())
+            || (self.external_deps != new_state.external_deps
+                && !new_state.external_deps.is_empty())
+            || (self.items_by_name != new_state.items_by_name
+                && !new_state.items_by_name.is_empty())
+            || (self.config.sccache != new_state.config.sccache)
+    }
+
+    pub(crate) fn format_cargo_deps(&self) -> String {
+        self.external_deps
+            .values()
+            .map(|krate| format!("{} = {}\n", krate.name, krate.config))
+            .collect::<Vec<_>>()
+            .join("")
+    }
+
+    fn compilation_mode(&self) -> CompilationMode {
+        if self.config.preserve_vars_on_panic {
+            CompilationMode::RunAndCatchPanics
+        } else {
+            CompilationMode::NoCatch
+        }
+    }
+
+    /// Returns code suitable for analysis purposes. Doesn't attempt to preserve runtime behavior.
+    fn analysis_code(&self, user_code: CodeBlock) -> CodeBlock {
+        let mut code = CodeBlock::new()
+            .generated("#![allow(unused_imports, unused_mut, dead_code)]")
+            .add_all(self.attributes_code())
+            .add_all(self.items_code())
+            .add_all(self.error_trait_code(true))
+            .generated("fn evcxr_variable_store<T: 'static>(_: T) {}")
+            .generated("#[allow(unused_variables)]")
+            .generated("async fn evcxr_analysis_wrapper(");
+        for (var_name, state) in &self.stored_variable_states {
+            code = code.generated(format!(
+                "{}{}: {},",
+                if state.is_mut { "mut " } else { "" },
+                var_name,
+                state.type_name
+            ));
+        }
+        code = code
+            .generated(") -> Result<(), EvcxrUserCodeError> {")
+            .add_all(user_code);
+
+        // Pack variable statements in analysis mode are a lot simpler than in compiled mode. We
+        // just call a function that enforces that the variable doesn't contain any non-static
+        // lifetimes.
+        for var_name in self.variable_states.keys() {
+            code.pack_variable(
+                var_name.clone(),
+                format!("evcxr_variable_store({var_name});"),
+            );
+        }
+
+        code = code.generated("Ok(())").generated("}");
+        code
+    }
+
+    fn code_to_compile(
+        &self,
+        user_code: CodeBlock,
+        compilation_mode: CompilationMode,
+    ) -> CodeBlock {
+        let mut code = CodeBlock::new()
+            .generated("#![allow(unused_imports, unused_mut, dead_code)]")
+            .add_all(self.attributes_code())
+            .add_all(self.items_code());
+        let has_user_code = !user_code.is_empty();
+        if has_user_code {
+            code = code.add_all(self.wrap_user_code(user_code, compilation_mode));
+        } else {
+            // TODO: Add a mechanism to load a crate without any function to call then remove this.
+            code = code
+                .generated("#[no_mangle]")
+                .generated(format!(
+                    "pub extern \"C\" fn {}(",
+                    self.current_user_fn_name()
+                ))
+                .generated("mut x: *mut std::os::raw::c_void) -> *mut std::os::raw::c_void {x}");
+        }
+        code
+    }
+
+    fn items_code(&self) -> CodeBlock {
+        let mut code = CodeBlock::new().add_all(self.get_imports());
+        for item in self.items_by_name.values().chain(self.unnamed_items.iter()) {
+            code = code.add_all(item.clone());
+        }
+        code
+    }
+
+    fn attributes_code(&self) -> CodeBlock {
+        let mut code = CodeBlock::new();
+        for attrib in self.attributes.values() {
+            code = code.add_all(attrib.clone());
+        }
+        code
+    }
+
+    fn error_trait_code(&self, for_analysis: bool) -> CodeBlock {
+        CodeBlock::new().generated(format!(
+            r#"
+            struct EvcxrUserCodeError {{}}
+            impl<T: {}> From<T> for EvcxrUserCodeError {{
+                fn from(error: T) -> Self {{
+                    eprintln!("{}", error);
+                    {}
+                    EvcxrUserCodeError {{}}
+                }}
+            }}
+        "#,
+            self.config.error_fmt.format_trait,
+            self.config.error_fmt.format_str,
+            if for_analysis {
+                ""
+            } else {
+                "println!(\"{}\", evcxr_internal_runtime::USER_ERROR_OCCURRED);"
+            }
+        ))
+    }
+
+    fn wrap_user_code(
+        &self,
+        mut user_code: CodeBlock,
+        compilation_mode: CompilationMode,
+    ) -> CodeBlock {
+        let needs_variable_store = !self.variable_states.is_empty()
+            || !self.stored_variable_states.is_empty()
+            || self.async_mode
+            || self.allow_question_mark;
+        let mut code = CodeBlock::new();
+        if self.allow_question_mark {
+            code = code.add_all(self.error_trait_code(false));
+        }
+        if needs_variable_store {
+            code = code
+                .generated("mod evcxr_internal_runtime {")
+                .generated(include_str!("evcxr_internal_runtime.rs"))
+                .generated("}");
+        }
+        code = code.generated("#[no_mangle]").generated(format!(
+            "pub extern \"C\" fn {}(",
+            self.current_user_fn_name()
+        ));
+        if needs_variable_store {
+            code = code
+                .generated("mut evcxr_variable_store: *mut evcxr_internal_runtime::VariableStore)")
+                .generated("  -> *mut evcxr_internal_runtime::VariableStore {")
+                .generated("if evcxr_variable_store.is_null() {")
+                .generated(
+                    "  evcxr_variable_store = evcxr_internal_runtime::create_variable_store();",
+                )
+                .generated("}")
+                .generated("let evcxr_variable_store = unsafe {&mut *evcxr_variable_store};")
+                .add_all(self.check_variable_statements())
+                .add_all(self.load_variable_statements());
+            user_code = user_code.add_all(self.store_variable_statements(VariableMoveState::New));
+        } else {
+            code = code.generated("evcxr_variable_store: *mut u8) -> *mut u8 {");
+        }
+        if self.async_mode {
+            user_code = CodeBlock::new()
+                .generated(stringify!(evcxr_variable_store
+                    .lazy_arc("evcxr_tokio_runtime", || std::sync::Mutex::new(
+                        tokio::runtime::Runtime::new().unwrap()
+                    ))
+                    .lock()
+                    .unwrap()))
+                .generated(".block_on(async {")
+                .add_all(user_code);
+            if self.allow_question_mark {
+                user_code = CodeBlock::new()
+                    .generated("let _ =")
+                    .add_all(user_code)
+                    .generated("Ok::<(), EvcxrUserCodeError>(())");
+            }
+            user_code = user_code.generated("});")
+        } else if self.allow_question_mark {
+            user_code = CodeBlock::new()
+                .generated("let _ = (|| -> std::result::Result<(), EvcxrUserCodeError> {")
+                .add_all(user_code)
+                .generated("Ok(())})();");
+        }
+        if compilation_mode == CompilationMode::RunAndCatchPanics {
+            if needs_variable_store {
+                code = code
+                    .generated("match std::panic::catch_unwind(")
+                    .generated("  std::panic::AssertUnwindSafe(||{")
+                    .add_all(user_code)
+                    // Return our local variable store from the closure to be merged back into the
+                    // main variable store.
+                    .generated("})) { ")
+                    .generated("  Ok(_) => {}")
+                    .generated("  Err(_) => {")
+                    .generated(format!("    println!(\"{PANIC_NOTIFICATION}\");"))
+                    .generated("}}");
+            } else {
+                code = code
+                    .generated("if std::panic::catch_unwind(||{")
+                    .add_all(user_code)
+                    .generated("}).is_err() {")
+                    .generated(format!("    println!(\"{PANIC_NOTIFICATION}\");"))
+                    .generated("}");
+            }
+        } else {
+            code = code.add_all(user_code);
+        }
+        if needs_variable_store {
+            code = code.add_all(self.store_variable_statements(VariableMoveState::Available));
+        }
+        code = code.generated("evcxr_variable_store");
+        code.generated("}")
+    }
+
+    fn store_variable_statements(&self, move_state: VariableMoveState) -> CodeBlock {
+        let mut statements = CodeBlock::new();
+        for (var_name, var_state) in &self.variable_states {
+            if var_state.move_state == move_state {
+                statements.pack_variable(
+                    var_name.clone(),
+                    format!(
+                        // Note, we use stringify instead of quoting ourselves since it results in
+                        // better errors if the user forgets to close a double-quote in their code.
+                        "evcxr_variable_store.put_variable::<{}>(stringify!({var_name}), {var_name});",
+                        var_state.type_name
+                    ),
+                );
+            }
+        }
+        statements
+    }
+
+    fn check_variable_statements(&self) -> CodeBlock {
+        let mut statements = CodeBlock::new().generated("{let mut vars_ok = true;");
+        for (var_name, var_state) in &self.stored_variable_states {
+            statements = statements.generated(format!(
+                "vars_ok &= evcxr_variable_store.check_variable::<{}>(stringify!({var_name}));",
+                var_state.type_name
+            ));
+        }
+        statements.generated("if !vars_ok {return evcxr_variable_store;}}")
+    }
+
+    // Returns code to load values from the variable store back into their variables.
+    fn load_variable_statements(&self) -> CodeBlock {
+        let mut statements = CodeBlock::new();
+        for (var_name, var_state) in &self.stored_variable_states {
+            let mutability = if var_state.is_mut { "mut " } else { "" };
+            statements.load_variable(format!(
+                "let {}{} = evcxr_variable_store.take_variable::<{}>(stringify!({}));",
+                mutability, var_name, var_state.type_name, var_name
+            ));
+        }
+        statements
+    }
+
+    fn current_user_fn_name(&self) -> String {
+        format!("run_user_code_{}", self.build_num)
+    }
+
+    fn get_imports(&self) -> CodeBlock {
+        let mut extern_stmts = CodeBlock::new();
+        for stmt in self.extern_crate_stmts.values() {
+            extern_stmts = extern_stmts.other_user_code(stmt.clone());
+        }
+        extern_stmts
+    }
+
+    /// Converts OriginalUserCode to OtherUserCode. OriginalUserCode can only be
+    /// used for the current code that's being evaluated, otherwise things like
+    /// tab completion will be confused, since there will be multiple bits of
+    /// code at a particular offset.
+    fn commit_old_user_code(&mut self) {
+        for block in self.items_by_name.values_mut() {
+            block.commit_old_user_code();
+        }
+        for block in self.unnamed_items.iter_mut() {
+            block.commit_old_user_code();
+        }
+    }
+
+    /// Applies `user_code` to this state object, returning the updated user
+    /// code. Things like use-statements will be removed from the returned code,
+    /// as they will have been stored in `self`.
+    fn apply(&mut self, user_code: CodeBlock, nodes: &[SyntaxNode]) -> Result<CodeBlock, Error> {
+        for variable_state in self.variable_states.values_mut() {
+            variable_state.move_state = VariableMoveState::Available;
+        }
+
+        let mut code_out = CodeBlock::new();
+        let mut previous_item_name = None;
+        let num_statements = user_code.segments.len();
+        for (statement_index, segment) in user_code.segments.into_iter().enumerate() {
+            let node = if let CodeKind::OriginalUserCode(meta) = &segment.kind {
+                &nodes[meta.node_index]
