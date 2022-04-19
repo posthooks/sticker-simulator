@@ -6,4 +6,15 @@
 // copied, modified, or distributed except according to those terms.
 
 // This file is both a module of evcxr and is included via include_str! then
-// built as a crate itself. The latter is the primary us
+// built as a crate itself. The latter is the primary use-case. It's included as
+// a submodule only so that constants can be shared.
+
+pub const VARIABLE_CHANGED_TYPE: &str = "EVCXR_VARIABLE_CHANGED_TYPE:";
+pub const USER_ERROR_OCCURRED: &str = "EVCXR_ERROR_OCCURRED";
+
+pub struct VariableStore {
+    variables: std::collections::HashMap<String, Box<dyn std::any::Any + 'static>>,
+}
+
+impl VariableStore {
+    pub fn new() -> V
