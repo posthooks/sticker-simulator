@@ -17,4 +17,15 @@ pub struct VariableStore {
 }
 
 impl VariableStore {
-    pub fn new() -> V
+    pub fn new() -> VariableStore {
+        VariableStore {
+            variables: std::collections::HashMap::new(),
+        }
+    }
+
+    pub fn put_variable<T: 'static>(&mut self, name: &str, value: T) {
+        self.variables.insert(name.to_owned(), Box::new(value));
+    }
+
+    pub fn check_variable<T: 'static>(&mut self, name: &str) -> bool {
+        if let Some(v) = self.variables.get(
