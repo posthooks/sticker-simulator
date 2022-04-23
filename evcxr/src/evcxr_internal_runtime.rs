@@ -52,4 +52,16 @@ impl VariableStore {
         }
     }
 
-    pub fn lazy_arc
+    pub fn lazy_arc<T: 'static, F: FnOnce() -> T>(
+        &mut self,
+        name: &str,
+        create: F,
+    ) -> std::sync::Arc<T> {
+        if let Some(value) = self
+            .variables
+            .entry(name.to_owned())
+            .or_insert_with(|| Box::new(std::sync::Arc::new(create())))
+            .downcast_mut()
+        {
+            std::sync::Arc::clone(value)
+        
