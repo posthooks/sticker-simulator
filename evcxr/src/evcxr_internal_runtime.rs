@@ -40,3 +40,16 @@ impl VariableStore {
 
     pub fn take_variable<T: 'static>(&mut self, name: &str) -> T {
         match self.variables.remove(name) {
+            Some(v) => {
+                if let Ok(value) = v.downcast() {
+                    *value
+                } else {
+                    // Shouldn't happen so long as check_variable was called.
+                    panic!("Variable changed type");
+                }
+            }
+            None => panic!("Variable '{name}' has gone missing"),
+        }
+    }
+
+    pub fn lazy_arc
