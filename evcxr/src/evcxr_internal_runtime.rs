@@ -28,4 +28,15 @@ impl VariableStore {
     }
 
     pub fn check_variable<T: 'static>(&mut self, name: &str) -> bool {
-        if let Some(v) = self.variables.get(
+        if let Some(v) = self.variables.get(name) {
+            if v.downcast_ref::<T>().is_none() {
+                eprintln!("The type of the variable {name} was redefined, so was lost.",);
+                println!("{VARIABLE_CHANGED_TYPE}{name}");
+                return false;
+            }
+        }
+        true
+    }
+
+    pub fn take_variable<T: 'static>(&mut self, name: &str) -> T {
+        match self.variables.remove(name) {
