@@ -64,4 +64,16 @@ impl VariableStore {
             .downcast_mut()
         {
             std::sync::Arc::clone(value)
-        
+        } else {
+            panic!("lazy_arc {name} changed type");
+        }
+    }
+
+    pub fn merge(&mut self, mut other: VariableStore) {
+        self.variables.extend(other.variables.drain());
+    }
+}
+
+pub fn create_variable_store() -> *mut VariableStore {
+    Box::into_raw(Box::new(VariableStore::new()))
+}
