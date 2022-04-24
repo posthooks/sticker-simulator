@@ -6,4 +6,25 @@
 // copied, modified, or distributed except according to those terms.
 
 #[cfg(all(unix, not(target_os = "freebsd")))]
-#[macro_u
+#[macro_use]
+extern crate sig;
+
+#[macro_use]
+mod errors;
+mod cargo_metadata;
+mod child_process;
+mod code_block;
+mod command_context;
+mod crash_guard;
+mod crate_config;
+mod eval_context;
+#[allow(dead_code)]
+mod evcxr_internal_runtime;
+mod item;
+mod module;
+mod runtime;
+mod rust_analyzer;
+mod statement_splitter;
+mod use_trees;
+
+pub use crate::command_context::Comma
