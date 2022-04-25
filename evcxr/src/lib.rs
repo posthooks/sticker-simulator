@@ -37,4 +37,12 @@ pub use crate::eval_context::EvalOutputs;
 pub use crate::runtime::runtime_hook;
 pub use rust_analyzer::Completions;
 
-/// Return the director
+/// Return the directory that evcxr tools should use for their configuration.
+///
+/// By default this is the `evcxr` subdirectory of whatever `dirs::config_dir()`
+/// returns, but it can be overridden by the `EVCXR_CONFIG_DIR` environment
+/// variable.
+pub fn config_dir() -> Option<std::path::PathBuf> {
+    std::env::var_os("EVCXR_CONFIG_DIR")
+        .map(std::path::PathBuf::from)
+      
