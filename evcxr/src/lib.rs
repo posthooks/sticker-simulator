@@ -27,4 +27,14 @@ mod rust_analyzer;
 mod statement_splitter;
 mod use_trees;
 
-pub use crate::command_context::Comma
+pub use crate::command_context::CommandContext;
+pub use crate::errors::Error;
+pub use crate::errors::{CompilationError, Theme};
+pub use crate::eval_context::EvalCallbacks;
+pub use crate::eval_context::EvalContext;
+pub use crate::eval_context::EvalContextOutputs;
+pub use crate::eval_context::EvalOutputs;
+pub use crate::runtime::runtime_hook;
+pub use rust_analyzer::Completions;
+
+/// Return the director
