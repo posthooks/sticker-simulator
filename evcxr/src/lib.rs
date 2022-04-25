@@ -45,4 +45,5 @@ pub use rust_analyzer::Completions;
 pub fn config_dir() -> Option<std::path::PathBuf> {
     std::env::var_os("EVCXR_CONFIG_DIR")
         .map(std::path::PathBuf::from)
-      
+        .or_else(|| dirs::config_dir().map(|d| d.join("evcxr")))
+}
