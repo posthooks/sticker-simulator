@@ -357,3 +357,18 @@ pub(crate) struct SoFile {
 fn get_host_target() -> Result<String, Error> {
     let output = match Command::new("rustc").arg("-Vv").output() {
         Ok(o) => o,
+        Err(error) => bail!("Failed to run rustc: {}", error),
+    };
+    let stdout = std::str::from_utf8(&output.stdout)?;
+    let stderr = std::str::from_utf8(&output.stderr)?;
+    for line in stdout.lines() {
+        if let Some(host) = line.strip_prefix("host: ") {
+            return Ok(host.to_owned());
+        }
+    }
+    bail!(
+        "rustc -Vv didn't output a host line.\n{}\n{}",
+        stdout,
+        stderr
+    );
+}
