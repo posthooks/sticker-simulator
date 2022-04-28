@@ -17,4 +17,15 @@ use std::{self};
 pub(crate) const EVCXR_IS_RUNTIME_VAR: &str = "EVCXR_IS_RUNTIME";
 pub(crate) const EVCXR_EXECUTION_COMPLETE: &str = "EVCXR_EXECUTION_COMPLETE";
 
-/// Binaries can call this just after staring. If w
+/// Binaries can call this just after staring. If we detect that we're actually
+/// running as a subprocess, control will not return.
+pub fn runtime_hook() {
+    if std::env::var(EVCXR_IS_RUNTIME_VAR).is_ok() {
+        Runtime::new().run_loop();
+    }
+}
+
+struct Runtime {
+    shared_objects: Vec<libloading::Library>,
+    variable_store_ptr: *mut std::os::raw::c_void,
+    // Our variable store is permitted to contain non-Send types (e.g. Rc), the
