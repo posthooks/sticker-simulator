@@ -28,4 +28,23 @@ pub fn runtime_hook() {
 struct Runtime {
     shared_objects: Vec<libloading::Library>,
     variable_store_ptr: *mut std::os::raw::c_void,
-    // Our variable store is permitted to contain non-Send types (e.g. Rc), the
+    // Our variable store is permitted to contain non-Send types (e.g. Rc), therefore we need to be
+    // non-Send as well.
+    _phantom_rc: PhantomData<Rc<()>>,
+}
+
+impl Runtime {
+    fn new() -> Runtime {
+        Runtime {
+            shared_objects: Vec::new(),
+            variable_store_ptr: std::ptr::null_mut(),
+            _phantom_rc: PhantomData,
+        }
+    }
+
+    fn run_loop(&mut self) -> ! {
+        use std::io::BufRead;
+
+        self.install_crash_handlers();
+
+        let std
