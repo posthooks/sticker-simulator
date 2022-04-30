@@ -64,4 +64,14 @@ impl Runtime {
         let load_and_run =
             LOAD_AND_RUN.get_or_init(|| Regex::new("LOAD_AND_RUN ([^ ]+) ([^ ]+)").unwrap());
         if let Some(captures) = load_and_run.captures(line) {
-            self.
+            self.load_and_run(&captures[1], &captures[2])
+        } else {
+            bail!("Unrecognised line: {}", line);
+        }
+    }
+
+    fn load_and_run(&mut self, so_path: &str, fn_name: &str) -> Result<(), Error> {
+        use std::os::raw::c_void;
+        let shared_object = unsafe { libloading::Library::new(so_path) }?;
+        unsafe {
+            let user_fn = shared_object
