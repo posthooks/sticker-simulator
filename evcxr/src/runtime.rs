@@ -55,4 +55,13 @@ impl Runtime {
                 std::process::exit(99);
             }
         }
-        std::process::exi
+        std::process::exit(0);
+    }
+
+    fn handle_line(&mut self, line: &io::Result<String>) -> Result<(), Error> {
+        let line = line.as_ref()?;
+        static LOAD_AND_RUN: OnceCell<Regex> = OnceCell::new();
+        let load_and_run =
+            LOAD_AND_RUN.get_or_init(|| Regex::new("LOAD_AND_RUN ([^ ]+) ([^ ]+)").unwrap());
+        if let Some(captures) = load_and_run.captures(line) {
+            self.
