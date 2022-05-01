@@ -84,4 +84,14 @@ impl Runtime {
     }
 
     #[cfg(all(unix, not(target_os = "freebsd")))]
-    pub fn install_crash_handler
+    pub fn install_crash_handlers(&self) {
+        use backtrace::Backtrace;
+        use sig::ffi::Sig;
+        extern "C" fn segfault_handler(signal: i32) {
+            eprintln!(
+                "{}",
+                match signal {
+                    Sig::SEGV => "Segmentation fault.",
+                    Sig::ILL => "Illegal instruction.",
+                    Sig::BUS => "Bus error.",
+           
