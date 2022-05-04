@@ -115,4 +115,8 @@ impl Drop for Runtime {
         // We never actually unload libraries. This is to prevent segfault on shutdown due to TLS
         // destructors being run that have been unloaded. See ``tests::tls_implementing_drop`. There
         // was some discussion of a similar issue on Mac OS at
-        // https://github.com/rust-lang/rust/issues/28794. Other possible
+        // https://github.com/rust-lang/rust/issues/28794. Other possible options that might be
+        // worthwhile investigating are to (A) unregister atexit on unload and leak (B) unregister
+        // atexit on unload and run destructor (C) when registering atexit hooks, dlopen the shared
+        // object so as to increment its refcount. (D) start a new thread and make sure it
+        // terminates before we unload anything. (A) and (B)
