@@ -94,4 +94,17 @@ impl Runtime {
                     Sig::SEGV => "Segmentation fault.",
                     Sig::ILL => "Illegal instruction.",
                     Sig::BUS => "Bus error.",
-           
+                    _ => "Unexpected signal.",
+                }
+            );
+            eprintln!("{:?}", Backtrace::new());
+            std::process::abort();
+        }
+
+        signal!(Sig::SEGV, segfault_handler);
+        signal!(Sig::ILL, segfault_handler);
+        signal!(Sig::BUS, segfault_handler);
+    }
+
+    #[cfg(not(all(unix, not(target_os = "freebsd"))))]
+    pub fn install_crash_handl
