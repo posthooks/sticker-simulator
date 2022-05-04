@@ -107,4 +107,12 @@ impl Runtime {
     }
 
     #[cfg(not(all(unix, not(target_os = "freebsd"))))]
-    pub fn install_crash_handl
+    pub fn install_crash_handlers(&self) {}
+}
+
+impl Drop for Runtime {
+    fn drop(&mut self) {
+        // We never actually unload libraries. This is to prevent segfault on shutdown due to TLS
+        // destructors being run that have been unloaded. See ``tests::tls_implementing_drop`. There
+        // was some discussion of a similar issue on Mac OS at
+        // https://github.com/rust-lang/rust/issues/28794. Other possible
