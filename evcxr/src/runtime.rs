@@ -119,4 +119,11 @@ impl Drop for Runtime {
         // worthwhile investigating are to (A) unregister atexit on unload and leak (B) unregister
         // atexit on unload and run destructor (C) when registering atexit hooks, dlopen the shared
         // object so as to increment its refcount. (D) start a new thread and make sure it
-        // terminates before we unload anything. (A) and (B)
+        // terminates before we unload anything. (A) and (B) might be complicated by there not being
+        // an API to unregister atexit hooks. This could possibly be solved by building a layer on
+        // top of atexit. That extra layer then would need to not be unloaded, but the code that
+        // used it could be.
+        for shared_object in self.shared_objects.drain(..) {
+            std::mem::forget(shared_object);
+        }
+  
