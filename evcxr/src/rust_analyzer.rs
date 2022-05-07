@@ -349,3 +349,161 @@ fn add_variable_for_pattern(
                 sema,
                 module,
             );
+            result.insert(
+                name.text().to_string(),
+                VariableInfo {
+                    type_name,
+                    is_mutable: ident_pat.mut_token().is_some(),
+                },
+            );
+            return true;
+        }
+    }
+    false
+}
+
+fn get_type_name(
+    explicit_type: Option<ast::Type>,
+    inferred_type: Option<ra_hir::Type>,
+    sema: &ra_hir::Semantics<ra_ide::RootDatabase>,
+    module: ra_hir::Module,
+) -> TypeName {
+    use ra_hir::HirDisplay;
+    if let Some(explicit_type) = explicit_type {
+        let type_name = explicit_type.syntax().text().to_string();
+        if is_type_valid(&type_name) {
+            return TypeName::Named(type_name);
+        }
+    }
+    if let Some(ty) = inferred_type {
+        if ty.is_closure() {
+            return TypeName::Closure;
+        }
+        if let Ok(type_name) = ty.display_source_code(sema.db, module.into()) {
+            if is_type_valid(&type_name) {
+                return TypeName::Named(type_name);
+            }
+        }
+    }
+    TypeName::Unknown
+}
+
+/// Completions found in a particular context.
+#[derive(Default)]
+pub struct Completions {
+    pub completions: Vec<Completion>,
+    pub start_offset: usize,
+    pub end_offset: usize,
+}
+
+/// A code completion. We use our own type rather than exposing rust-analyzer's CompletionItem,
+/// since rust-analyzer is an internal implementation detail, so we don't want to expose it in a
+/// public API.
+#[derive(Debug, Eq, PartialEq)]
+pub struct Completion {
+    pub code: String,
+}
+
+/// Returns whether this appears to be a valid type. Rust analyzer, when asked to emit code for some
+/// types, produces invalid code. In particular, fixed sized arrays come out without a size. e.g.
+/// instead of `[i32, 5]`, we get `[i32, _]`.
+pub(crate) fn is_type_valid(type_name: &str) -> bool {
+    use ra_ap_syntax::SyntaxKind;
+    let wrapped_source = format!("const _: {type_name} = foo();");
+    let parsed = ast::SourceFile::parse(&wrapped_source);
+    if !parsed.errors().is_empty() {
+        return false;
+    }
+    for node in parsed.syntax_node().descendants() {
+        if node.kind() == SyntaxKind::ERROR || node.kind() == SyntaxKind::INFER_TYPE {
+            return false;
+        }
+    }
+    true
+}
+
+#[cfg(test)]
+mod test {
+    use super::is_type_valid;
+    use super::RustAnalyzer;
+    use super::TypeName;
+    use anyhow::Result;
+
+    impl TypeName {
+        fn named(name: &str) -> TypeName {
+            TypeName::Named(name.to_owned())
+        }
+    }
+
+    #[test]
+    fn get_variable_types() -> Result<()> {
+        let tmpdir = tempfile::tempdir()?;
+        let mut ra = RustAnalyzer::new(tmpdir.path())?;
+        ra.with_sysroot = false;
+        std::fs::write(
+            ra.cargo_toml_filename().to_path_buf(),
+            r#"
+            [package]
+            name = "foo"
+            version = "0.1.0"
+
+            [lib]
+            "#,
+        )?;
+
+        ra.set_source(
+            r#"
+            struct Foo<const I: usize> {}
+            struct Point {x: u8, y: u8}
+            fn foo() {
+                let v1 = true;
+                let mut v1 = 42i32;
+                let v2 = &[false];
+                let v3: Foo<10> = Foo::<10> {};
+                {
+                    let v2 = false;
+                    let v100 = true;
+                }
+                let (v4, ..) = (42u64, 43, 44);
+                let p1 = Point {x: 1, y: 2};
+                let Point {x, y: y2} = p1;
+            }
+            fn foo2() {
+                let v9 = true;
+            }"#
+            .to_owned(),
+        )?;
+        let var_types = ra.top_level_variables("foo");
+        assert_eq!(var_types["v1"].type_name, TypeName::named("i32"));
+        assert!(var_types["v1"].is_mutable);
+        assert_eq!(var_types["v2"].type_name, TypeName::named("&[bool; 1]"));
+        assert!(!var_types["v2"].is_mutable);
+        assert_eq!(var_types["v3"].type_name, TypeName::named("Foo<10>"));
+        assert!(var_types.get("v100").is_none());
+        assert_eq!(var_types["v4"].type_name, TypeName::named("u64"));
+        assert_eq!(var_types["x"].type_name, TypeName::named("u8"));
+        assert_eq!(var_types["y2"].type_name, TypeName::named("u8"));
+
+        ra.set_source(
+            r#"
+            fn foo() {
+                let v1 = 1u16;
+            }"#
+            .to_owned(),
+        )?;
+        let var_types = ra.top_level_variables("foo");
+        assert_eq!(var_types["v1"].type_name, TypeName::named("u16"));
+        assert!(var_types.get("v2").is_none());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_is_type_valid() {
+        assert!(is_type_valid("Vec<String>"));
+        assert!(is_type_valid("&[i32]"));
+        assert!(!is_type_valid("[i32, _]"));
+        assert!(!is_type_valid("Vec<_>"));
+        assert!(is_type_valid("Foo<42>"));
+    }
+}
