@@ -126,4 +126,5 @@ impl Drop for Runtime {
         for shared_object in self.shared_objects.drain(..) {
             std::mem::forget(shared_object);
         }
-  
+    }
+}
