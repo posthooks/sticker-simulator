@@ -20,4 +20,20 @@ pub(crate) enum Import {
 impl Import {
     fn format(name: &str, path: &[String]) -> Import {
         let joined_path = path.join("::");
-        let cod
+        let code = if path.last().map(String::as_str) == Some(name) {
+            format!("use {joined_path};")
+        } else {
+            format!("use {joined_path} as {name};")
+        };
+        if name == "_" || name == "*" {
+            Import::Unnamed(code)
+        } else {
+            Import::Named {
+                name: name.to_string(),
+                code,
+            }
+        }
+    }
+}
+
+pu
