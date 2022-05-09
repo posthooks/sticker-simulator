@@ -53,4 +53,10 @@ pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Im
             let mut path = path;
             let mut path_parts = Vec::new();
             loop {
-            
+                if let Some(segment) = path.segment() {
+                    if let Some(name_ref) = segment.name_ref() {
+                        path_parts.push(name_ref.text().to_owned());
+                    } else if let Some(token) = segment.crate_token() {
+                        path_parts.push(token.text().to_owned());
+                    }
+                    if let Some(quali
