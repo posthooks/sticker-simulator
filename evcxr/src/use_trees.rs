@@ -36,4 +36,9 @@ impl Import {
     }
 }
 
-pu
+pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Import)) {
+    fn process_use_tree(use_tree: &ast::UseTree, prefix: &[String], out: &mut impl FnMut(Import)) {
+        if let Some(path) = use_tree.path() {
+            // If we get ::self, ignore it and use what we've got so far.
+            if path.segment().and_then(|segment| segment.kind())
+               
