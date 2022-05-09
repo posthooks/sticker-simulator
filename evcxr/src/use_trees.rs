@@ -41,4 +41,16 @@ pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Im
         if let Some(path) = use_tree.path() {
             // If we get ::self, ignore it and use what we've got so far.
             if path.segment().and_then(|segment| segment.kind())
-               
+                == Some(ast::PathSegmentKind::SelfKw)
+            {
+                if let Some(last) = prefix.last() {
+                    out(Import::format(last, prefix));
+                }
+                return;
+            }
+
+            // Collect the components of `path`.
+            let mut path = path;
+            let mut path_parts = Vec::new();
+            loop {
+            
