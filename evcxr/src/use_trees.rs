@@ -59,4 +59,14 @@ pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Im
                     } else if let Some(token) = segment.crate_token() {
                         path_parts.push(token.text().to_owned());
                     }
-                    if let Some(quali
+                    if let Some(qualifier) = path.qualifier() {
+                        path = qualifier;
+                        continue;
+                    }
+                }
+                break;
+            }
+            path_parts.reverse();
+
+            // Combine the existing prefix with the new path components.
+            let mut new_prefix = Vec::with_capacity(prefix.len() + path_parts.len())
