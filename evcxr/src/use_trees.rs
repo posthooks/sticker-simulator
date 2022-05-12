@@ -78,4 +78,10 @@ pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Im
                 for subtree in tree_list.use_trees() {
                     process_use_tree(&subtree, &new_prefix, out);
                 }
-            } el
+            } else if let Some(rename) = use_tree.rename() {
+                if let Some(name) = ast::HasName::name(&rename) {
+                    out(Import::format(&name.text(), &new_prefix));
+                } else if let Some(underscore) = rename.underscore_token() {
+                    out(Import::format(underscore.text(), &new_prefix));
+                }
+            } else if let Some(star_token) = use_t
