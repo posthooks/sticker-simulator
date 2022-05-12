@@ -69,4 +69,13 @@ pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Im
             path_parts.reverse();
 
             // Combine the existing prefix with the new path components.
-            let mut new_prefix = Vec::with_capacity(prefix.len() + path_parts.len())
+            let mut new_prefix = Vec::with_capacity(prefix.len() + path_parts.len());
+            new_prefix.extend(prefix.iter().cloned());
+            new_prefix.append(&mut path_parts);
+
+            // Recurse into any subtree.
+            if let Some(tree_list) = use_tree.use_tree_list() {
+                for subtree in tree_list.use_trees() {
+                    process_use_tree(&subtree, &new_prefix, out);
+                }
+            } el
