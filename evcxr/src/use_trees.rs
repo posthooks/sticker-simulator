@@ -97,4 +97,14 @@ pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Im
 }
 
 #[cfg(test)]
-mo
+mod tests {
+    use super::use_tree_names_do;
+    use super::Import;
+    use ra_ap_syntax::ast;
+    use ra_ap_syntax::ast::HasModuleItem;
+
+    fn use_tree_names(code: &str) -> Vec<Import> {
+        let mut out = Vec::new();
+        let file = ast::SourceFile::parse(code);
+        for item in file.tree().items() {
+            if let ast::Item::Use(use_st
