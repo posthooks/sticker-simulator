@@ -84,4 +84,17 @@ pub(crate) fn use_tree_names_do(use_tree: &ast::UseTree, out: &mut impl FnMut(Im
                 } else if let Some(underscore) = rename.underscore_token() {
                     out(Import::format(underscore.text(), &new_prefix));
                 }
-            } else if let Some(star_token) = use_t
+            } else if let Some(star_token) = use_tree.star_token() {
+                new_prefix.push(star_token.text().to_owned());
+                out(Import::format(star_token.text(), &new_prefix));
+            } else if let Some(ident) = new_prefix.last() {
+                out(Import::format(ident, &new_prefix));
+            }
+        }
+    }
+
+    process_use_tree(use_tree, &[], out);
+}
+
+#[cfg(test)]
+mo
