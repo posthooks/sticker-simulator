@@ -123,4 +123,17 @@ mod tests {
     }
 
     fn named(name: &str, code: &str) -> Import {
-      
+        Import::Named {
+            name: name.to_owned(),
+            code: code.to_owned(),
+        }
+    }
+
+    #[test]
+    fn test_complex_tree() {
+        assert_eq!(
+            use_tree_names(
+                "use std::collections::{self, hash_map::{HashMap}, HashSet as MyHashSet};"
+            ),
+            vec![
+                named("collections", "use std::col
