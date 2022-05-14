@@ -136,4 +136,15 @@ mod tests {
                 "use std::collections::{self, hash_map::{HashMap}, HashSet as MyHashSet};"
             ),
             vec![
-                named("collections", "use std::col
+                named("collections", "use std::collections;"),
+                named("HashMap", "use std::collections::hash_map::HashMap;"),
+                named("MyHashSet", "use std::collections::HashSet as MyHashSet;")
+            ]
+        );
+    }
+
+    #[test]
+    fn test_underscore() {
+        assert_eq!(
+            use_tree_names("use foo::bar::MyTrait as _;"),
+            vec![unnamed("
