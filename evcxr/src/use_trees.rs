@@ -107,4 +107,20 @@ mod tests {
         let mut out = Vec::new();
         let file = ast::SourceFile::parse(code);
         for item in file.tree().items() {
-            if let ast::Item::Use(use_st
+            if let ast::Item::Use(use_stmt) = item {
+                if let Some(use_tree) = use_stmt.use_tree() {
+                    use_tree_names_do(&use_tree, &mut |import| {
+                        out.push(import);
+                    });
+                }
+            }
+        }
+        out
+    }
+
+    fn unnamed(code: &str) -> Import {
+        Import::Unnamed(code.to_owned())
+    }
+
+    fn named(name: &str, code: &str) -> Import {
+      
