@@ -147,4 +147,15 @@ mod tests {
     fn test_underscore() {
         assert_eq!(
             use_tree_names("use foo::bar::MyTrait as _;"),
-            vec![unnamed("
+            vec![unnamed("use foo::bar::MyTrait as _;"),]
+        );
+    }
+
+    #[test]
+    fn test_glob() {
+        assert_eq!(
+            use_tree_names("use foo::bar::*;"),
+            vec![unnamed("use foo::bar::*;"),]
+        );
+    }
+}
