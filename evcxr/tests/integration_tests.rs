@@ -14,4 +14,14 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::io;
 use std::ops::Deref;
-use std::ops:
+use std::ops::DerefMut;
+use std::sync::Mutex;
+
+#[track_caller]
+fn eval_and_unwrap(ctxt: &mut CommandContext, code: &str) -> HashMap<String, String> {
+    match ctxt.execute(code) {
+        Ok(output) => output.content_by_mime_type,
+        Err(err) => {
+            println!(
+                "======== last src ========\n{}==========================",
+                ctxt.last_
