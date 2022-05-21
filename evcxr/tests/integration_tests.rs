@@ -24,4 +24,17 @@ fn eval_and_unwrap(ctxt: &mut CommandContext, code: &str) -> HashMap<String, Str
         Err(err) => {
             println!(
                 "======== last src ========\n{}==========================",
-                ctxt.last_
+                ctxt.last_source().unwrap()
+            );
+            match err {
+                Error::CompilationErrors(errors) => {
+                    for error in errors {
+                        println!("{}", error.rendered());
+                    }
+                }
+                other => println!("{}", other),
+            }
+
+            panic!("Unexpected compilation error. See above for details");
+        }
+    }
