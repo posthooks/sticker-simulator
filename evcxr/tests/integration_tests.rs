@@ -63,4 +63,17 @@ fn send_output<T: io::Write + Send + 'static>(
     });
 }
 fn context_pool() -> &'static Mutex<Vec<CommandContext>> {
-    static
+    static CONTEXT_POOL: OnceCell<Mutex<Vec<CommandContext>>> = OnceCell::new();
+    CONTEXT_POOL.get_or_init(|| Mutex::new(vec![]))
+}
+
+struct ContextHolder {
+    // Only `None` while being dropped.
+    ctx: Option<CommandContext>,
+}
+
+impl Drop for ContextHolder {
+    fn drop(&mut self) {
+        if is_context_pool_enabled() {
+            let mut pool = context_pool().lock().unwrap();
+            le
