@@ -50,4 +50,17 @@ fn new_command_context_and_outputs() -> (CommandContext, EvalContextOutputs) {
     (command_context, outputs)
 }
 
-fn send_output<T: 
+fn send_output<T: io::Write + Send + 'static>(
+    channel: crossbeam_channel::Receiver<String>,
+    mut output: T,
+) {
+    std::thread::spawn(move || {
+        while let Ok(line) = channel.recv() {
+            if writeln!(output, "{}", line).is_err() {
+                break;
+            }
+        }
+    });
+}
+fn context_pool() -> &'static Mutex<Vec<CommandContext>> {
+    static
