@@ -38,3 +38,16 @@ fn eval_and_unwrap(ctxt: &mut CommandContext, code: &str) -> HashMap<String, Str
             panic!("Unexpected compilation error. See above for details");
         }
     }
+}
+
+macro_rules! eval {
+    ($ctxt:expr, $($t:tt)*) => {eval_and_unwrap(&mut $ctxt, stringify!($($t)*))}
+}
+
+fn new_command_context_and_outputs() -> (CommandContext, EvalContextOutputs) {
+    let (eval_context, outputs) = EvalContext::new_for_testing();
+    let command_context = CommandContext::with_eval_context(eval_context);
+    (command_context, outputs)
+}
+
+fn send_output<T: 
