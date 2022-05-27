@@ -76,4 +76,21 @@ impl Drop for ContextHolder {
     fn drop(&mut self) {
         if is_context_pool_enabled() {
             let mut pool = context_pool().lock().unwrap();
-            le
+            let mut ctx = self.ctx.take().unwrap();
+            ctx.reset_config();
+            ctx.execute(":clear").unwrap();
+            pool.push(ctx)
+        }
+    }
+}
+
+impl Deref for ContextHolder {
+    type Target = CommandContext;
+
+    fn deref(&self) -> &Self::Target {
+        self.ctx.as_ref().unwrap()
+    }
+}
+
+impl DerefMut for ContextHolder {
+    fn deref_mut(&mut self) -> &mut Self
