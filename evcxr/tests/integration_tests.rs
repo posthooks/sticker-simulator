@@ -93,4 +93,17 @@ impl Deref for ContextHolder {
 }
 
 impl DerefMut for ContextHolder {
-    fn deref_mut(&mut self) -> &mut Self
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.ctx.as_mut().unwrap()
+    }
+}
+
+fn is_context_pool_enabled() -> bool {
+    std::env::var("EVCXR_DISABLE_CTX_POOL")
+        .map(|var| var != "1")
+        .unwrap_or(true)
+}
+
+/// Returns a ContextHolder, which will dereference to a CommandContext. When
+/// the ContextHolder is dropped, the held CommandContext will be cleared then
+/// returned
