@@ -110,4 +110,10 @@ fn is_context_pool_enabled() -> bool {
 /// least 25%. This is probably mostly due to avoiding the need to reload the
 /// standard library in rust-analyzer, as that is quite expensive. If you think
 /// a test is causing subsequent tests to misbehave, you can disable the pool by
-/// setting `EVCXR_DISABLE_CTX_POOL=1
+/// setting `EVCXR_DISABLE_CTX_POOL=1`. This can be helpful for debugging,
+/// however the interference problem should be fixed as the ":clear" command,
+/// combined with resetting configuration should really be sufficient to ensure
+/// that subsequent tests will pass.
+fn new_context() -> ContextHolder {
+    let ctx = context_pool().lock().unwrap().pop().unwrap_or_else(|| {
+        let (context, outputs) = 
