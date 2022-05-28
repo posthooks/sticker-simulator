@@ -129,4 +129,21 @@ fn defined_item_names(eval_context: &CommandContext) -> Vec<&str> {
     defined_names
 }
 
-fn variable_names_and_types(c
+fn variable_names_and_types(ctx: &CommandContext) -> Vec<(&str, &str)> {
+    let mut var_names = ctx.variables_and_types().collect::<Vec<_>>();
+    var_names.sort();
+    var_names
+}
+
+fn variable_names(ctx: &CommandContext) -> Vec<&str> {
+    let mut var_names = ctx
+        .variables_and_types()
+        .map(|(var_name, _)| var_name)
+        .collect::<Vec<_>>();
+    var_names.sort();
+    var_names
+}
+
+#[test]
+fn single_statement() {
+  
