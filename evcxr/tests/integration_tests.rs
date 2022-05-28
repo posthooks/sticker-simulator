@@ -116,4 +116,17 @@ fn is_context_pool_enabled() -> bool {
 /// that subsequent tests will pass.
 fn new_context() -> ContextHolder {
     let ctx = context_pool().lock().unwrap().pop().unwrap_or_else(|| {
-        let (context, outputs) = 
+        let (context, outputs) = new_command_context_and_outputs();
+        send_output(outputs.stderr, io::stderr());
+        context
+    });
+    ContextHolder { ctx: Some(ctx) }
+}
+
+fn defined_item_names(eval_context: &CommandContext) -> Vec<&str> {
+    let mut defined_names = eval_context.defined_item_names().collect::<Vec<_>>();
+    defined_names.sort();
+    defined_names
+}
+
+fn variable_names_and_types(c
