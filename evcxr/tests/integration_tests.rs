@@ -106,4 +106,8 @@ fn is_context_pool_enabled() -> bool {
 
 /// Returns a ContextHolder, which will dereference to a CommandContext. When
 /// the ContextHolder is dropped, the held CommandContext will be cleared then
-/// returned
+/// returned to a global pool. This reuse speeds up running lots of tests by at
+/// least 25%. This is probably mostly due to avoiding the need to reload the
+/// standard library in rust-analyzer, as that is quite expensive. If you think
+/// a test is causing subsequent tests to misbehave, you can disable the pool by
+/// setting `EVCXR_DISABLE_CTX_POOL=1
