@@ -146,4 +146,15 @@ fn variable_names(ctx: &CommandContext) -> Vec<&str> {
 
 #[test]
 fn single_statement() {
-  
+    let mut e = new_context();
+    eval!(e, assert_eq!(40i32 + 2, 42));
+}
+
+#[test]
+fn save_and_restore_variables() {
+    let mut e = new_context();
+
+    eval!(e, let mut a = 34; let b = 8;);
+    eval!(e, a = a + b;);
+    assert_eq!(eval!(e, a), text_plain("42"));
+    // Try to change a mutable variable and check that the error we g
