@@ -157,4 +157,13 @@ fn save_and_restore_variables() {
     eval!(e, let mut a = 34; let b = 8;);
     eval!(e, a = a + b;);
     assert_eq!(eval!(e, a), text_plain("42"));
-    // Try to change a mutable variable and check that the error we g
+    // Try to change a mutable variable and check that the error we get is what we expect.
+    match e.execute("b = 2;") {
+        Err(Error::CompilationErrors(errors)) => {
+            if errors.len() != 1 {
+                println!("{:#?}", errors);
+            }
+            assert_eq!(errors.len(), 1);
+            if errors[0].code() != Some("E0594") && errors[0].code() != Some("E0384") {
+                panic!("Unexpected error {:?}", errors[0].code());
+     
