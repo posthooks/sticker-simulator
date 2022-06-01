@@ -166,4 +166,19 @@ fn save_and_restore_variables() {
             assert_eq!(errors.len(), 1);
             if errors[0].code() != Some("E0594") && errors[0].code() != Some("E0384") {
                 panic!("Unexpected error {:?}", errors[0].code());
-     
+            }
+        }
+        _ => unreachable!(),
+    }
+
+    // Make sure that we can correctly determine variable types when using the
+    // question mark operator.
+    eval_and_unwrap(
+        &mut e,
+        r#"
+        pub mod foo {
+            pub mod bar {
+                pub struct Baz {}
+                impl Baz {
+                    pub fn r42(&self) -> i32 {42}
+ 
