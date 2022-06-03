@@ -207,4 +207,19 @@ fn missing_semicolon_on_let_stmt() {
         }
         x => {
             panic!("Unexpected result: {:?}", x);
-        
+        }
+    }
+}
+
+#[test]
+fn printing() {
+    let (mut e, outputs) = new_command_context_and_outputs();
+
+    eval!(e,
+        println!("This is stdout");
+        eprintln!("This is stderr");
+        println!("Another stdout line");
+        eprintln!("Another stderr line");
+    );
+    assert_eq!(outputs.stdout.recv(), Ok("This is stdout".to_owned()));
+ 
