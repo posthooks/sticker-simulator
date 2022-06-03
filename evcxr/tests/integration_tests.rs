@@ -198,4 +198,13 @@ fn save_and_restore_variables() {
 }
 
 #[test]
-fn missing_se
+fn missing_semicolon_on_let_stmt() {
+    let mut e = new_context();
+    eval_and_unwrap(&mut e, "mod foo {pub mod bar { pub struct Baz {} }}");
+    match e.execute("let v1 = foo::bar::Baz {}") {
+        Err(Error::CompilationErrors(e)) => {
+            assert!(e.first().unwrap().message().contains(';'));
+        }
+        x => {
+            panic!("Unexpected result: {:?}", x);
+        
