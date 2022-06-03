@@ -181,4 +181,21 @@ fn save_and_restore_variables() {
                 pub struct Baz {}
                 impl Baz {
                     pub fn r42(&self) -> i32 {42}
- 
+                }
+            }
+        }
+        fn create_baz() -> Result<Option<foo::bar::Baz>, i32> {
+            Ok(Some(foo::bar::Baz {}))
+        }
+    "#,
+    );
+    eval_and_unwrap(&mut e, "let v1 = create_baz()?;");
+    eval_and_unwrap(&mut e, "let v2 = create_baz()?;");
+    assert_eq!(
+        eval_and_unwrap(&mut e, "v1.unwrap().r42() + v2.unwrap().r42()"),
+        text_plain("84")
+    );
+}
+
+#[test]
+fn missing_se
