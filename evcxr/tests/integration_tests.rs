@@ -222,4 +222,14 @@ fn printing() {
         eprintln!("Another stderr line");
     );
     assert_eq!(outputs.stdout.recv(), Ok("This is stdout".to_owned()));
- 
+    assert_eq!(outputs.stderr.recv(), Ok("This is stderr".to_owned()));
+    assert_eq!(outputs.stdout.recv(), Ok("Another stdout line".to_owned()));
+    assert_eq!(outputs.stderr.recv(), Ok("Another stderr line".to_owned()));
+}
+
+#[test]
+fn rc_refcell_etc() {
+    let mut e = new_context();
+    eval!(e,
+        use std::cell::RefCell; use std::rc::Rc;
+        let r: Rc<Re
