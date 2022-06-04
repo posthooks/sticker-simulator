@@ -232,4 +232,21 @@ fn rc_refcell_etc() {
     let mut e = new_context();
     eval!(e,
         use std::cell::RefCell; use std::rc::Rc;
-        let r: Rc<Re
+        let r: Rc<RefCell<String>> = Rc::new(RefCell::new(String::new()));
+        let r2: Rc<RefCell<String>> = Rc::clone(&r);
+    );
+    eval!(e,
+        r.borrow_mut().push_str("f");
+        let s = "oo";
+    );
+    eval!(e,
+        r.borrow_mut().push_str(s);
+        assert!(*r.borrow() == "foo");
+    );
+}
+
+#[test]
+fn define_then_call_function() {
+    let mut e = new_context();
+    eval!(
+        e,
