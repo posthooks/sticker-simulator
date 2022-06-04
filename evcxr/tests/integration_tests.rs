@@ -250,3 +250,19 @@ fn define_then_call_function() {
     let mut e = new_context();
     eval!(
         e,
+        pub fn bar() -> i32 {
+            42
+        }
+    );
+    eval!(
+        e,
+        pub fn foo() -> i32 {
+            bar()
+        }
+        assert_eq!(foo(), 42);
+    );
+    assert_eq!(defined_item_names(&e), vec!["bar", "foo"]);
+}
+
+// This test has recently started failing on windows. It fails when deleting the .pdb file with an
+// "access denied" error. No idea why. Perhaps in t
