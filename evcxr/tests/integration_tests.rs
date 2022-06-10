@@ -284,4 +284,15 @@ fn function_panics_with_variable_preserving() {
     );
     eval!(e, panic!("Intentional panic {}", b););
     // The variable a isn't referenced by the code that panics, while the variable b implements
-    // Copy, s
+    // Copy, so neither should be lost.
+    assert_eq!(
+        eval!(e, format!("{:?}, {}", a, b)),
+        text_plain("\"[1, 2, 3], 42\"")
+    );
+}
+
+#[test]
+fn function_panics_without_variable_preserving() {
+    // Don't allow stderr to be printed here. We don't really want to see the
+    // panic stack trace when running tests.
+    let (mut
