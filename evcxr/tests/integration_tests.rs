@@ -273,4 +273,15 @@ fn define_then_call_function() {
 fn function_panics_with_variable_preserving() {
     // Don't allow stderr to be printed here. We don't really want to see the
     // panic stack trace when running tests.
-    let (mut e, _) = 
+    let (mut e, _) = new_command_context_and_outputs();
+    eval_and_unwrap(
+        &mut e,
+        r#"
+        :preserve_vars_on_panic 1
+        let a = vec![1, 2, 3];
+        let b = 42;
+    "#,
+    );
+    eval!(e, panic!("Intentional panic {}", b););
+    // The variable a isn't referenced by the code that panics, while the variable b implements
+    // Copy, s
