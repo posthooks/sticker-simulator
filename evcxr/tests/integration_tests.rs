@@ -295,4 +295,15 @@ fn function_panics_with_variable_preserving() {
 fn function_panics_without_variable_preserving() {
     // Don't allow stderr to be printed here. We don't really want to see the
     // panic stack trace when running tests.
-    let (mut
+    let (mut e, _) = new_command_context_and_outputs();
+    eval_and_unwrap(
+        &mut e,
+        r#"
+        :preserve_vars_on_panic 0
+        let a = vec![1, 2, 3];
+        let b = 42;
+    "#,
+    );
+    let result = e.execute(stringify!(panic!("Intentional panic {}", b);));
+    if let Err(Error::SubprocessTerminated(message)) = result {
+        assert!(message.contains("Subprocess termin
