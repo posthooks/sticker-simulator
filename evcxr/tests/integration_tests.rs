@@ -306,4 +306,15 @@ fn function_panics_without_variable_preserving() {
     );
     let result = e.execute(stringify!(panic!("Intentional panic {}", b);));
     if let Err(Error::SubprocessTerminated(message)) = result {
-        assert!(message.contains("Subprocess termin
+        assert!(message.contains("Subprocess terminated"));
+    } else {
+        panic!("Unexpected result: {:?}", result);
+    }
+    assert_eq!(variable_names_and_types(&e), vec![]);
+    // Make sure that a compilation error doesn't bring the variables back from
+    // the dead.
+    assert!(e.execute("This will not compile").is_err());
+    assert_eq!(variable_names_and_types(&e), vec![]);
+}
+
+// Also tests multiple item definit
