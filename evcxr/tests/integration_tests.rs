@@ -317,4 +317,18 @@ fn function_panics_without_variable_preserving() {
     assert_eq!(variable_names_and_types(&e), vec![]);
 }
 
-// Also tests multiple item definit
+// Also tests multiple item definitions in the one compilation unit.
+#[test]
+fn tls_implementing_drop() {
+    let mut e = new_context();
+    eval!(e,
+        pub struct Foo {}
+        impl Drop for Foo {
+            fn drop(&mut self) {
+                println!("Dropping Foo");
+            }
+        }
+        pub fn init_foo() {
+            thread_local! {
+                pub static FOO: Foo = Foo {};
+       
