@@ -371,4 +371,19 @@ impl TmpCrate {
                  name = \"{}\"\n\
                  version = \"0.0.1\"\n\
                  edition = \"2018\"\n\
-   
+                 ",
+                name
+            ),
+        )?;
+        std::fs::write(src_dir.join("lib.rs"), src)?;
+        Ok(TmpCrate {
+            name: name.to_owned(),
+            tempdir,
+        })
+    }
+
+    fn dep_command(&self, extra_options: &str) -> String {
+        format!(
+            ":dep {} = {{ path = \"{}\"{}{} }}",
+            self.name,
+            self
