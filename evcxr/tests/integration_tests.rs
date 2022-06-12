@@ -360,4 +360,15 @@ struct TmpCrate {
 
 impl TmpCrate {
     fn new(name: &str, src: &str) -> Result<TmpCrate, io::Error> {
-        let t
+        let tempdir = tempfile::tempdir()?;
+        let src_dir = tempdir.path().join("src");
+        std::fs::create_dir_all(&src_dir)?;
+        std::fs::write(
+            tempdir.path().join("Cargo.toml"),
+            format!(
+                "\
+                 [package]\n\
+                 name = \"{}\"\n\
+                 version = \"0.0.1\"\n\
+                 edition = \"2018\"\n\
+   
