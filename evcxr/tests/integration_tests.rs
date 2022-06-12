@@ -331,4 +331,21 @@ fn tls_implementing_drop() {
         pub fn init_foo() {
             thread_local! {
                 pub static FOO: Foo = Foo {};
-       
+            }
+            FOO.with(|f| ())
+        }
+    );
+    eval!(e, init_foo(););
+}
+
+fn text_plain(content: &str) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+    map.insert("text/plain".to_owned(), content.to_owned());
+    map
+}
+
+#[test]
+fn moved_value() {
+    let mut e = new_context();
+    eval!(e, let a = Some("foo".to_owned()););
+    asser
