@@ -348,4 +348,16 @@ fn text_plain(content: &str) -> HashMap<String, String> {
 fn moved_value() {
     let mut e = new_context();
     eval!(e, let a = Some("foo".to_owned()););
-    asser
+    assert_eq!(variable_names_and_types(&e), vec![("a", "Option<String>")]);
+    assert_eq!(eval!(e, a.unwrap()), text_plain("\"foo\""));
+    assert_eq!(variable_names_and_types(&e), vec![]);
+}
+
+struct TmpCrate {
+    name: String,
+    tempdir: tempfile::TempDir,
+}
+
+impl TmpCrate {
+    fn new(name: &str, src: &str) -> Result<TmpCrate, io::Error> {
+        let t
