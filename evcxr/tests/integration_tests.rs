@@ -386,4 +386,15 @@ impl TmpCrate {
         format!(
             ":dep {} = {{ path = \"{}\"{}{} }}",
             self.name,
-            self
+            self.tempdir.path().to_string_lossy().replace('\\', "\\\\"),
+            if extra_options.is_empty() { "" } else { ", " },
+            extra_options
+        )
+    }
+}
+
+#[test]
+fn crate_deps() {
+    let (mut e, _) = new_command_context_and_outputs();
+    // Try loading a crate that doesn't exist. This it to make sure that we
+    // don't keep this bad crate around for 
