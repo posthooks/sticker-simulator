@@ -397,4 +397,13 @@ impl TmpCrate {
 fn crate_deps() {
     let (mut e, _) = new_command_context_and_outputs();
     // Try loading a crate that doesn't exist. This it to make sure that we
-    // don't keep this bad crate around for 
+    // don't keep this bad crate around for subsequent execution attempts.
+    let r = e.execute(
+        r#"
+       :dep bad = { path = "this_path_does_not_exist"}
+       40"#,
+    );
+    assert!(r.is_err());
+    let crate1 = TmpCrate::new("crate1", "pub fn r20() -> i32 {20}").unwrap();
+    let error = e
+        .execute(&crate1.dep_command(r#"features = ["no_such_feature"]"#
