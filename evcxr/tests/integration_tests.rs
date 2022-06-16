@@ -406,4 +406,11 @@ fn crate_deps() {
     assert!(r.is_err());
     let crate1 = TmpCrate::new("crate1", "pub fn r20() -> i32 {20}").unwrap();
     let error = e
-        .execute(&crate1.dep_command(r#"features = ["no_such_feature"]"#
+        .execute(&crate1.dep_command(r#"features = ["no_such_feature"]"#))
+        .unwrap_err();
+    assert!(error.to_string().contains("no_such_feature"));
+    let crate2 = TmpCrate::new("crate2", "pub fn r22() -> i32 {22}").unwrap();
+    let to_run =
+        crate1.dep_command("") + "\n" + &crate2.dep_command("") + "\ncrate1::r20() + crate2::r22()";
+    let outputs = e.execute(&to_run).unwrap();
+    assert_eq!(outputs.content_by_mime_type, te
