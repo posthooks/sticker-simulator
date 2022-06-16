@@ -423,4 +423,14 @@ fn crate_name_with_hyphens() {
     let to_run =
         crate1.dep_command("") + "\nuse crate_name_with_hyphens;\ncrate_name_with_hyphens::r42()";
     let outputs = e.execute(&to_run).unwrap();
-    assert_eq!(outputs.content_by_mime_ty
+    assert_eq!(outputs.content_by_mime_type, text_plain("42"));
+}
+
+// A collection of bits of code that are invalid. Our bar here is that we don't
+// crash and each thing we try to evaluate results in an error. The actual
+// errors will be produced by the rust compiler and we don't want to tie our
+// tests needlessly to the specific error messages, so we don't check what the
+// errors are.
+#[test]
+fn invalid_code() {
+ 
