@@ -433,4 +433,20 @@ fn crate_name_with_hyphens() {
 // errors are.
 #[test]
 fn invalid_code() {
- 
+    let mut e = new_context();
+    assert!(e.execute("use crate;").is_err());
+}
+
+#[test]
+fn struct_type_inference() {
+    let mut e = new_context();
+    eval!(
+        e,
+        #[derive(Debug)]
+        pub struct Point {
+            pub x: i32,
+            pub y: i32,
+        }
+    );
+    eval!(e, let p1 = Point {x: 3, y: 8};);
+    // While we're here, also test that printing an expression does
