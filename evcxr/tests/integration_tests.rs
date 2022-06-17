@@ -478,4 +478,15 @@ fn statement_and_expression() {
     let mut e = new_context();
     assert_eq!(
         eval!(e, let a = "foo".to_owned() + "bar"; a),
-        text_plain(
+        text_plain("\"foobar\"")
+    );
+}
+
+#[test]
+fn continue_execution_after_bad_use_statement() {
+    let mut e = new_context();
+    // First make sure we get the error we expect.
+    match e.execute("use foobar;") {
+        Err(Error::CompilationErrors(errors)) => {
+            assert_eq!(errors.len(), 1);
+            assert_eq!(errors[0].code(), Some("E0432"
