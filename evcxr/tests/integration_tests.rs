@@ -449,4 +449,15 @@ fn struct_type_inference() {
         }
     );
     eval!(e, let p1 = Point {x: 3, y: 8};);
-    // While we're here, also test that printing an expression does
+    // While we're here, also test that printing an expression doesn't move the (non-copy)
+    // value. Hey, these tests take time to run, we've got to economize :)
+    eval!(e, p1);
+    // Destructure our point.
+    eval!(e, let Point {x, y: y2} = p1;);
+    eval!(e,
+        assert_eq!(x, 3);
+        assert_eq!(y2, 8);
+    );
+    let mut defined_names = e.defined_item_names().collect::<Vec<_>>();
+    defined_names.sort();
+    assert_eq!(defined_names, vec!["Point
