@@ -460,4 +460,22 @@ fn struct_type_inference() {
     );
     let mut defined_names = e.defined_item_names().collect::<Vec<_>>();
     defined_names.sort();
-    assert_eq!(defined_names, vec!["Point
+    assert_eq!(defined_names, vec!["Point"]);
+}
+
+#[test]
+fn non_concrete_types() {
+    let mut e = new_context();
+    eval!(e, let a = (42, 3.14););
+    assert_eq!(
+        e.variables_and_types().collect::<Vec<_>>(),
+        vec![("a", "(i32, f64)")]
+    );
+}
+
+#[test]
+fn statement_and_expression() {
+    let mut e = new_context();
+    assert_eq!(
+        eval!(e, let a = "foo".to_owned() + "bar"; a),
+        text_plain(
