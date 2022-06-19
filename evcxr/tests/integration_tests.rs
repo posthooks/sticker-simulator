@@ -489,4 +489,16 @@ fn continue_execution_after_bad_use_statement() {
     match e.execute("use foobar;") {
         Err(Error::CompilationErrors(errors)) => {
             assert_eq!(errors.len(), 1);
-            assert_eq!(errors[0].code(), Some("E0432"
+            assert_eq!(errors[0].code(), Some("E0432"));
+        }
+        x => panic!("Unexpected result: {:?}", x),
+    }
+    // Now make sure we can still execute code.
+    assert_eq!(eval!(e, "f".to_string() + "oo"), text_plain("\"foo\""));
+}
+
+#[test]
+fn error_from_macro_expansion() {
+    let mut e = new_context();
+    // The the following line we're missing & before format!. The compiler reports the error as
+    // c
