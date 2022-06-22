@@ -501,4 +501,9 @@ fn continue_execution_after_bad_use_statement() {
 fn error_from_macro_expansion() {
     let mut e = new_context();
     // The the following line we're missing & before format!. The compiler reports the error as
-    // c
+    // coming from "<format macros>" with expansion information leading to the user code. Make sure
+    // we ignore the span from non-user code and use the expansion info correctly.
+    match e.execute("let mut s = String::new(); s.push_str(format!(\"\"));") {
+        Err(Error::CompilationErrors(errors)) => {
+            assert_eq!(errors.len(), 1);
+            assert_eq!(errors[0].code(), S
