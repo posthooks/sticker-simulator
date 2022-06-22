@@ -506,4 +506,12 @@ fn error_from_macro_expansion() {
     match e.execute("let mut s = String::new(); s.push_str(format!(\"\"));") {
         Err(Error::CompilationErrors(errors)) => {
             assert_eq!(errors.len(), 1);
-            assert_eq!(errors[0].code(), S
+            assert_eq!(errors[0].code(), Some("E0308")); // mismatched types
+            let mut lines = std::collections::HashSet::new();
+            for spanned_message in errors[0].spanned_messages() {
+                for line in &spanned_message.lines {
+                    lines.insert(line.as_str());
+                }
+            }
+            // There's only one line on which we should be reporting errors...
+            assert
