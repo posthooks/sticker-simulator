@@ -514,4 +514,20 @@ fn error_from_macro_expansion() {
                 }
             }
             // There's only one line on which we should be reporting errors...
-            assert
+            assert_eq!(
+                lines.into_iter().collect::<Vec<_>>(),
+                vec!["let mut s = String::new(); s.push_str(format!(\"\"));"]
+            );
+        }
+        x => panic!("Unexpected result: {:?}", x),
+    }
+}
+
+#[test]
+fn multiple_identical_use_statements() {
+    let mut e = new_context();
+    eval!(e, use std::collections::HashMap;);
+    eval!(e, use std::collections::HashMap;);
+}
+
+#[test]
