@@ -531,3 +531,17 @@ fn multiple_identical_use_statements() {
 }
 
 #[test]
+fn redefine_type_with_existing_var() {
+    let mut e = new_context();
+    eval!(e,
+        struct Foo {x: i32}
+        let f1 = Foo {x: 42};
+        let f2 = Foo {x: 42};
+    );
+    assert_eq!(
+        variable_names_and_types(&e),
+        vec![("f1", "Foo"), ("f2", "Foo")]
+    );
+    eval!(e,
+        struct Foo { x: i32, y: i32 }
+        let f3 = Foo 
