@@ -544,4 +544,19 @@ fn redefine_type_with_existing_var() {
     );
     eval!(e,
         struct Foo { x: i32, y: i32 }
-        let f3 = Foo 
+        let f3 = Foo {x: 42, y: 43};
+    );
+    // `f1` and `f2` should have been dropped because the type Foo was
+    // redefined.
+    assert_eq!(variable_names_and_types(&e), vec![("f3", "Foo")]);
+    // Make sure that we actually evaluated the above by checking that f3 is
+    // accessible.
+    eval!(e,
+        assert_eq!(f3.x, 42);
+    );
+}
+
+#[test]
+fn abort_and_restart() {
+    let mut e = new_context();
+    ev
