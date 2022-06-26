@@ -571,4 +571,17 @@ fn abort_and_restart() {
     let result = e.execute(stringify!(std::process::abort();));
     if let Err(Error::SubprocessTerminated(message)) = result {
         #[cfg(not(windows))]
-        
+        {
+            if !message.starts_with("Subprocess terminated with status: signal: 6") {
+                panic!("Unexpected abort message: '{message}'");
+            }
+        }
+        #[cfg(windows)]
+        {
+            assert_eq!(
+                message,
+                "Subprocess terminated with status: exit code: 0xc0000409"
+            );
+        }
+    } else {
+  
