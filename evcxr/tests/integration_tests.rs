@@ -559,4 +559,16 @@ fn redefine_type_with_existing_var() {
 #[test]
 fn abort_and_restart() {
     let mut e = new_context();
-    ev
+    eval!(
+        e,
+        pub fn foo() -> i32 {
+            42
+        }
+        // Define a variable in order to check that we don't think it still
+        // exists after a restart.
+        let a = 42i32;
+    );
+    let result = e.execute(stringify!(std::process::abort();));
+    if let Err(Error::SubprocessTerminated(message)) = result {
+        #[cfg(not(windows))]
+        
