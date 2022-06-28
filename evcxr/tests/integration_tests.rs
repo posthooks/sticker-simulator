@@ -584,4 +584,15 @@ fn abort_and_restart() {
             );
         }
     } else {
-  
+        panic!("Unexpected result: {:?}", result);
+    }
+    eval!(e, assert_eq!(foo(), 42));
+    assert!(e.defined_item_names().next().is_some());
+    eval_and_unwrap(&mut e, ":clear");
+    eval!(e, assert_eq!(40 + 2, 42););
+    assert_eq!(e.defined_item_names().next(), None);
+}
+
+#[test]
+fn variable_assignment_compile_fail_then_use_statement() {
+   
