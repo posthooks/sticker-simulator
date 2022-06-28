@@ -595,4 +595,18 @@ fn abort_and_restart() {
 
 #[test]
 fn variable_assignment_compile_fail_then_use_statement() {
-   
+    let mut e = new_context();
+    assert!(e.execute(stringify!(let v = foo();)).is_err());
+    eval!(e, use std::collections::HashMap;);
+    assert_eq!(eval!(e, 42), text_plain("42"));
+}
+
+#[test]
+fn int_array() {
+    let mut e = new_context();
+    eval!(e, let v = [42; 5];);
+    eval!(e, assert_eq!(v[4], 42));
+}
+
+#[test]
+fn const_generics_with_ex
