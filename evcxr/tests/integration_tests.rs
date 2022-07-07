@@ -623,4 +623,17 @@ fn const_generics_with_explicit_type() {
 // Make sure that a type name containing a reserved word (e.g. async) doesn't
 // cause a compilation error.
 #[test]
-fn reserved_words
+fn reserved_words() {
+    let mut e = new_context();
+    eval!(e,
+        mod r#async { pub struct Foo {} }
+        let v = r#async::Foo {};
+    );
+}
+
+#[test]
+fn unnamable_type_closure() {
+    let mut e = new_context();
+    let result = e.execute(stringify!(let v = || {42};));
+    if let Err(Error::Message(message)) = result {
+        if !(message.starts_with("The varia
