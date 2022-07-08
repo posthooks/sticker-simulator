@@ -650,4 +650,19 @@ fn unnamable_type_impl_trait() {
     let result = e.execute(stringify!(
         pub trait Bar {}
         impl Bar for i32 {}
-        pub fn foo()
+        pub fn foo() -> impl Bar {42}
+        let v = foo();
+    ));
+    if let Err(Error::Message(message)) = result {
+        if !(message.starts_with("The variable `v` has type")
+            && message.contains("cannot be persisted"))
+        {
+            panic!("Unexpected error: {:?}", message);
+        }
+    } else {
+        panic!("Unexpected result: {:?}", result);
+    }
+}
+
+#[test]
+fn partially_inf
