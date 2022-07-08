@@ -677,4 +677,21 @@ fn partially_inferred_variable_type() {
 fn print_then_assign_variable() {
     let mut e = new_context();
     eval!(e, println!("Hello, world!"););
-    
+    eval!(e, let x = 42;);
+}
+
+#[test]
+fn display_type() {
+    let mut e = new_context();
+    assert_eq!(
+        e.execute(":types")
+            .unwrap()
+            .get("text/plain")
+            .unwrap()
+            .trim(),
+        "Types: true"
+    );
+    assert_eq!(eval!(e, 42), text_plain(": i32 = 42"));
+    assert_eq!(
+        eval!(e, Some("hello".to_string())),
+        text_plain(
