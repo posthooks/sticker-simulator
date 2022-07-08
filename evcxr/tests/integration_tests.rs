@@ -636,4 +636,18 @@ fn unnamable_type_closure() {
     let mut e = new_context();
     let result = e.execute(stringify!(let v = || {42};));
     if let Err(Error::Message(message)) = result {
-        if !(message.starts_with("The varia
+        if !(message.starts_with("The variable") && message.contains("cannot be persisted")) {
+            panic!("Unexpected error: {:?}", message);
+        }
+    } else {
+        panic!("Unexpected result: {:?}", result);
+    }
+}
+
+#[test]
+fn unnamable_type_impl_trait() {
+    let mut e = new_context();
+    let result = e.execute(stringify!(
+        pub trait Bar {}
+        impl Bar for i32 {}
+        pub fn foo()
