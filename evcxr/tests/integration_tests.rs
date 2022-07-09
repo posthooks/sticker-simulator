@@ -694,4 +694,19 @@ fn display_type() {
     assert_eq!(eval!(e, 42), text_plain(": i32 = 42"));
     assert_eq!(
         eval!(e, Some("hello".to_string())),
-        text_plain(
+        text_plain(": Option<String> = Some(\"hello\")")
+    );
+    assert_eq!(
+        e.execute(":types")
+            .unwrap()
+            .get("text/plain")
+            .unwrap()
+            .trim(),
+        "Types: false"
+    );
+    assert_eq!(eval!(e, 42), text_plain("42"));
+}
+
+#[test]
+fn shorten_type_name() {
+    // This is a way to test the evcxr_shorten_type() function, evaluated in the 
