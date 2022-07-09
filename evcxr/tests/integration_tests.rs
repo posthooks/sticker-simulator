@@ -709,4 +709,16 @@ fn display_type() {
 
 #[test]
 fn shorten_type_name() {
-    // This is a way to test the evcxr_shorten_type() function, evaluated in the 
+    // This is a way to test the evcxr_shorten_type() function, evaluated in the child
+    let mut e = new_context();
+    e.execute(":fmt {}").unwrap();
+    // We need to enable types, so evcxr_shorten_type() will be defined.
+    e.execute(":types").unwrap();
+    assert_eq!(
+        eval!(e, evcxr_shorten_type("alloc::string::String")),
+        text_plain(": String = String")
+    );
+    assert_eq!(
+        eval!(
+            e,
+            evcxr_shorten_type("core::option
