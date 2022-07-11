@@ -721,4 +721,19 @@ fn shorten_type_name() {
     assert_eq!(
         eval!(
             e,
-            evcxr_shorten_type("core::option
+            evcxr_shorten_type("core::option::Option<alloc::string::String>")
+        ),
+        text_plain(": String = Option<String>")
+    );
+    assert_eq!(
+        eval!(e, evcxr_shorten_type("i32")),
+        text_plain(": String = i32")
+    );
+}
+
+#[test]
+fn question_mark_operator() {
+    let mut e = new_context();
+    // Make sure question mark works without variables.
+    eval!(e, std::fs::read_to_string("/does/not/exist")?;);
+ 
