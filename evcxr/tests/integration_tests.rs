@@ -736,4 +736,17 @@ fn question_mark_operator() {
     let mut e = new_context();
     // Make sure question mark works without variables.
     eval!(e, std::fs::read_to_string("/does/not/exist")?;);
- 
+    assert!(e.execute(":efmt x").is_err());
+    eval_and_unwrap(&mut e, ":efmt {:?}");
+    eval!(e,
+        let owned = "owned".to_string();
+        let copy = 40;
+        let mut owned_mut = "owned_mut".to_string();
+        let mut copy_mut = 41;
+    );
+    eval!(e,
+        use std::io::Result;
+        owned_mut.push_str("42");
+        copy_mut += 1;
+        let copy = 42;
+      
