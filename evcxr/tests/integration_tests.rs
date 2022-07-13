@@ -749,4 +749,18 @@ fn question_mark_operator() {
         owned_mut.push_str("42");
         copy_mut += 1;
         let copy = 42;
-      
+        let copy2 = 42;
+        std::fs::read_to_string("/does/not/exist")?;
+        owned_mut.push_str("------");
+        copy_mut += 10;
+    );
+    assert_eq!(variable_names(&e), vec!["copy_mut", "owned", "owned_mut"]);
+    eval!(e,
+        assert_eq!(owned, "owned");
+        assert_eq!(owned_mut, "owned_mut42");
+        assert_eq!(copy_mut, 42);
+    );
+}
+
+#[test]
+fn format() 
