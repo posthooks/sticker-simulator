@@ -763,4 +763,16 @@ fn question_mark_operator() {
 }
 
 #[test]
-fn format() 
+fn format() {
+    let mut e = new_context();
+    assert_eq!(eval!(e, format!("{:2x}", 2)), text_plain("\" 2\""));
+}
+
+// The final statement, if it doesn't end in a semicolon will be printed. Make
+// sure we don't try to print earlier statements just because they don't end in
+// semicolons.
+#[test]
+fn non_semi_statements() {
+    let mut e = new_context();
+    assert_eq!(
+        
