@@ -798,4 +798,24 @@ fn partial_destructuring() {
 fn define_then_call_macro() {
     let mut e = new_context();
     eval!(
-  
+        e,
+        macro_rules! foo {
+            ($a:expr) => {
+                40 + $a
+            };
+        }
+    );
+    assert_eq!(eval!(e, foo!(2)), text_plain("42"));
+}
+
+fn simple_completions(ctx: &mut CommandContext, code: &str) -> HashSet<String> {
+    ctx.completions(code, code.len())
+        .unwrap()
+        .completions
+        .into_iter()
+        .map(|c| c.code)
+        .collect()
+}
+
+#[test]
+fn code_c
