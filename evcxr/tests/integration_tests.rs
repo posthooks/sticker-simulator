@@ -775,4 +775,27 @@ fn format() {
 fn non_semi_statements() {
     let mut e = new_context();
     assert_eq!(
-        
+        eval!(e,
+            for a in 1..5 {}
+            for b in 1..5 {}
+            42
+        ),
+        text_plain("42")
+    );
+}
+
+#[test]
+fn partial_destructuring() {
+    let mut e = new_context();
+    eval!(e,
+        let _ = 1;
+        let (x, ..) = (42, 43, 44);
+    );
+    assert_eq!(eval!(e, x), text_plain("42"));
+}
+
+#[test]
+fn define_then_call_macro() {
+    let mut e = new_context();
+    eval!(
+  
