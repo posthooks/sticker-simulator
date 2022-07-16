@@ -818,4 +818,13 @@ fn simple_completions(ctx: &mut CommandContext, code: &str) -> HashSet<String> {
 }
 
 #[test]
-fn code_c
+fn code_completion() {
+    let mut ctx = new_context();
+    // This first bit of code that we execute serves two purposes. Firstly, it's
+    // used later in the test. Secondly, it ensures that our first attempt at
+    // completion doesn't get confused by user code that has already been
+    // evaluated.
+    ctx.execute(
+        r#"
+        mod bar {
+            pub stru
