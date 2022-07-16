@@ -827,4 +827,19 @@ fn code_completion() {
     ctx.execute(
         r#"
         mod bar {
-            pub stru
+            pub struct Baz {}
+            impl Baz {
+                pub fn fff5() {}
+            }
+        }
+        let var1 = 42;
+        let var2 = String::new();"#,
+    )
+    .unwrap();
+    let code = r#"
+        fn foo() -> Vec<String> {
+            vec![]
+        }
+        foo().res"#;
+    let completions = ctx.completions(code, code.len()).unwrap();
+    assert!(!completions.completions.i
