@@ -866,3 +866,15 @@ fn code_completion() {
             .map(|c| c.code.as_str())
             .collect::<Vec<_>>(),
         vec![":dep"]
+    );
+
+    // Check that we get zero completions when expected.
+    let code = code.replace("res", "asdfasdf");
+    assert_eq!(
+        ctx.completions(&code, code.len()).unwrap().completions,
+        vec![]
+    );
+
+    // Check that user-defined variables are included in the completions, but
+    // evcxr internal variables are not.
+    let completions = simple_completions(&mut 
