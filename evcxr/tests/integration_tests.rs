@@ -877,4 +877,11 @@ fn code_completion() {
 
     // Check that user-defined variables are included in the completions, but
     // evcxr internal variables are not.
-    let completions = simple_completions(&mut 
+    let completions = simple_completions(&mut ctx, "let _ = v");
+    assert!(completions.contains("var1"));
+    assert!(completions.contains("var2"));
+    assert!(!completions.contains("vars_ok"));
+    let completions = simple_completions(&mut ctx, "let _ = e");
+    assert!(!completions.contains("evcxr_variable_store"));
+    assert!(!completions.contains("evcxr_internal_runtime"));
+    assert!(!complet
