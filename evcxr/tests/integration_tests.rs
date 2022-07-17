@@ -853,4 +853,16 @@ fn code_completion() {
         }
     }
     assert_eq!(completions.start_offset, code.len() - "res".len());
-    asse
+    assert_eq!(completions.end_offset, code.len());
+
+    // Check command completions.
+    let completions = ctx.completions(":de", 3).unwrap();
+    assert_eq!(completions.start_offset, 0);
+    assert_eq!(completions.end_offset, 3);
+    assert_eq!(
+        completions
+            .completions
+            .iter()
+            .map(|c| c.code.as_str())
+            .collect::<Vec<_>>(),
+        vec![":dep"]
