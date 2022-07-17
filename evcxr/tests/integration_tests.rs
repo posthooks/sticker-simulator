@@ -842,4 +842,15 @@ fn code_completion() {
         }
         foo().res"#;
     let completions = ctx.completions(code, code.len()).unwrap();
-    assert!(!completions.completions.i
+    assert!(!completions.completions.is_empty());
+    assert!(completions
+        .completions
+        .iter()
+        .any(|c| c.code == "reserve(additional)"));
+    for c in completions.completions {
+        if !c.code.starts_with("res") {
+            panic!("Unexpected completion: '{}'", c.code);
+        }
+    }
+    assert_eq!(completions.start_offset, code.len() - "res".len());
+    asse
