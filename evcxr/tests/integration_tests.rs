@@ -892,4 +892,12 @@ fn code_completion() {
     let completions = ctx.completions(code, code.len()).unwrap();
     assert!(completions.completions.iter().any(|c| c.code == "Baz"));
 
-    // Rust-analyzer yet
+    // Rust-analyzer yet doesn't handle use-statements inside a block, so if the
+    // following use-statement ends up in a block, then `Baz` won't resolve and
+    // we won't get any completions.
+    let code = "use bar::Baz; Baz::";
+    let completions = ctx.completions(code, code.len()).unwrap();
+    assert!(completions.completions.iter().any(|c| c.code == "fff5()"));
+}
+
+#[te
