@@ -884,4 +884,12 @@ fn code_completion() {
     let completions = simple_completions(&mut ctx, "let _ = e");
     assert!(!completions.contains("evcxr_variable_store"));
     assert!(!completions.contains("evcxr_internal_runtime"));
-    assert!(!complet
+    assert!(!completions.contains("evcxr_analysis_wrapper"));
+
+    // We handle use-statements differently to other code, make sure that we can
+    // still get completions from them.
+    let code = "use bar::";
+    let completions = ctx.completions(code, code.len()).unwrap();
+    assert!(completions.completions.iter().any(|c| c.code == "Baz"));
+
+    // Rust-analyzer yet
