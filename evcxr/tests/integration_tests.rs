@@ -916,3 +916,18 @@ fn repeated_use_statements() {
             }
             pub struct Baz {}
             pub trait Foo {
+                fn do_foo(&self) -> i32 {42}
+            }
+            impl Foo for Bar {}
+            pub mod s1 {
+                pub fn f1() {}
+            }
+            pub mod s2 {
+                pub fn f2() {}
+            }
+        }
+        use std::iter::Iterator as _;
+        use foo::Foo as _;
+        use foo::s1::*;
+        use foo::s2::*;
+        use 
