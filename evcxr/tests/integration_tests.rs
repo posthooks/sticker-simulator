@@ -900,4 +900,19 @@ fn code_completion() {
     assert!(completions.completions.iter().any(|c| c.code == "fff5()"));
 }
 
-#[te
+#[test]
+fn repeated_use_statements() {
+    let mut e = new_context();
+    eval_and_unwrap(
+        &mut e,
+        r#"
+        mod foo {
+            pub struct Bar {}
+            impl Bar {
+                pub fn result() -> i32 {
+                    42
+                }
+                pub fn new() -> Bar { Bar {} }
+            }
+            pub struct Baz {}
+            pub trait Foo {
