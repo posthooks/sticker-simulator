@@ -930,4 +930,16 @@ fn repeated_use_statements() {
         use foo::Foo as _;
         use foo::s1::*;
         use foo::s2::*;
-        use 
+        use foo::Bar;"#,
+    );
+    // Try a bad import. This should fail, but shouldn't affect subsequent eval
+    // calls.
+    assert!(e.execute("use this::will::fail;").is_err());
+    assert_eq!(
+        eval_and_unwrap(&mut e, "use foo::Bar as _; Bar::result()"),
+        text_plain("42")
+    );
+    assert_eq!(
+        eval_and_unwrap(
+            &mut e,
+            "use foo::{Bar, Baz}; f1();
