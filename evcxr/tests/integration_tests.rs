@@ -942,4 +942,16 @@ fn repeated_use_statements() {
     assert_eq!(
         eval_and_unwrap(
             &mut e,
-            "use foo::{Bar, Baz}; f1();
+            "use foo::{Bar, Baz}; f1(); f2(); Bar::new().do_foo()"
+        ),
+        text_plain("42")
+    );
+}
+
+#[track_caller]
+fn check(ctx: &mut CommandContext, code: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for err in ctx.check(code).unwrap() {
+        if let Some(spanned_message) = err.primary_spanned_message() {
+            if let Some(span) = spanned_message.span {
+           
