@@ -969,4 +969,22 @@ fn check(ctx: &mut CommandContext, code: &str) -> Vec<String> {
 }
 
 fn strs(input: &[String]) -> Vec<&str> {
-    let mut result: Vec<&str>
+    let mut result: Vec<&str> = input.iter().map(|s| s.as_str()).collect();
+    result.sort();
+    result
+}
+
+#[track_caller]
+fn assert_no_errors(ctx: &mut CommandContext, code: &str) {
+    assert_eq!(strs(&check(ctx, code)), Vec::<&str>::new());
+}
+
+#[test]
+fn check_for_errors() {
+    let mut ctx = new_context();
+
+    assert_eq!(
+        strs(&check(
+            &mut ctx,
+            r#"let a = 10;
+let s2 = "さび  äää
