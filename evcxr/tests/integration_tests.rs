@@ -987,4 +987,16 @@ fn check_for_errors() {
         strs(&check(
             &mut ctx,
             r#"let a = 10;
-let s2 = "さび  äää
+let s2 = "さび  äää"; let s2: String = 42; fn foo() -> i32 {
+    println!("さび  äää"); (
+    )
+}
+"#
+        )),
+        vec!["error 2:41-2:43", "error 3:29-4:6"]
+    );
+
+    // An unused variable not within a function shouldn't produce a warning.
+    assert_no_errors(&mut ctx, "let mut s = String::new();");
+
+    // An unused variable within a function should produce a warning. Older versions of rustc h
