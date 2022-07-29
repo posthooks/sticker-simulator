@@ -1006,4 +1006,12 @@ let s2 = "さび  äää"; let s2: String = 42; fn foo() -> i32 {
         assert_eq!(strs(&unused_var_warnings), vec!["warning 1:15-1:20"]);
     }
 
-    // Make sure we don't get errors about duplicate us
+    // Make sure we don't get errors about duplicate use statements after we've
+    // executed some code.
+    eval_and_unwrap(&mut ctx, "use std::fmt::Debug; 42");
+    assert_no_errors(&mut ctx, "use std::fmt::Debug; 42");
+
+    // Make sure we do get errors for a bad use statement. Currently this is
+    // limited to simple use statements (with {}).
+    assert_eq!(
+        strs(&check(&mut ctx, "use std::foo:
