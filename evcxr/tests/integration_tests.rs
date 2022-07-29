@@ -999,4 +999,11 @@ let s2 = "さび  äää"; let s2: String = 42; fn foo() -> i32 {
     // An unused variable not within a function shouldn't produce a warning.
     assert_no_errors(&mut ctx, "let mut s = String::new();");
 
-    // An unused variable within a function should produce a warning. Older versions of rustc h
+    // An unused variable within a function should produce a warning. Older versions of rustc have
+    // the warning span on `mut s`, while newer ones have it just one `s`.
+    let unused_var_warnings = check(&mut ctx, "fn foo() {let mut s = String::new();}");
+    if strs(&unused_var_warnings) != vec!["warning 1:19-1:20"] {
+        assert_eq!(strs(&unused_var_warnings), vec!["warning 1:15-1:20"]);
+    }
+
+    // Make sure we don't get errors about duplicate us
