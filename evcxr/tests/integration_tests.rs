@@ -1039,4 +1039,14 @@ let s2 = "さび  äää"; let s2: String = 42; fn foo() -> i32 {
             "
         )),
         vec!["error 1:6-1:41", "error 2:6-2:50", "error 4:1-4:20"]
-   
+    );
+
+    // Make sure missing close parenthesis are reported as expected. Note, we still don't check the
+    // message here, but the span of the message gives clues that we're getting an appropriate
+    // error.
+    assert_eq!(
+        strs(&check(&mut ctx, "std::mem::drop(42); std::mem::drop(")),
+        vec!["error 1:35-1:36"]
+    );
+
+    // Attempts to store a variable containing a
