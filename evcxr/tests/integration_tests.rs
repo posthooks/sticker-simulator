@@ -1028,3 +1028,15 @@ let s2 = "さび  äää"; let s2: String = 42; fn foo() -> i32 {
     );
 
     // Check that errors adding crates are reported.
+    assert_eq!(
+        strs(&check(
+            &mut ctx,
+            "\
+            :dep this_crate_does_not_exist = \"12.34\"\n\
+            :dep foo = { path = \"/this/path/does/not/exist\" }\n\
+            // This is a comment interleaved with commands\n\
+            :an_invalid_command
+            "
+        )),
+        vec!["error 1:6-1:41", "error 2:6-2:50", "error 4:1-4:20"]
+   
