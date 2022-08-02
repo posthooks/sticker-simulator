@@ -22,4 +22,8 @@ fn get_input(prompt: &str, is_password: bool) -> Option<String> {
 // The following constants are here so that they can be shared between this crate and Evcxr. They're
 // not really intended to be used.
 
-#[doc(hidden)
+#[doc(hidden)]
+pub const GET_CMD: &str = "EVCXR_INPUT_REQUEST";
+
+#[doc(hidden)]
+pub const GET_CMD_PASSWORD: &str = "EVCXR_INPUT_REQUEST_PASSWORD";
