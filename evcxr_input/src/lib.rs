@@ -10,4 +10,16 @@ pub fn get_password(prompt: &str) -> String {
 
 fn get_input(prompt: &str, is_password: bool) -> Option<String> {
     if is_password {
-        println!("{}:{}", G
+        println!("{}:{}", GET_CMD_PASSWORD, prompt);
+    } else {
+        println!("{}:{}", GET_CMD, prompt);
+    }
+    let mut line = String::new();
+    std::io::stdin().read_line(&mut line).ok()?;
+    Some(line.trim().to_owned())
+}
+
+// The following constants are here so that they can be shared between this crate and Evcxr. They're
+// not really intended to be used.
+
+#[doc(hidden)
