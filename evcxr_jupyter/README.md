@@ -36,4 +36,23 @@ To actually use evcxr_jupyter, you'll need Jupyter notbook to be installed.
   https://jupyter.org/install
 
 You'll also need the source for the Rust standard library installed. If you
-already use rust-analyzer, you'll likel
+already use rust-analyzer, you'll likely have this installed. To install this
+using rustup, run:
+```sh
+rustup component add rust-src
+```
+
+## Running
+
+To start Jupyter Notebook, run:
+
+```sh
+jupyter notebook
+```
+
+Once started, it should open a page in your web browser. Look for the "New" menu
+on the right and from it, select "Rust".
+
+## Usage information
+
+Evcxr is both a REPL and a Jupyter kernel. See [Evcxr 
