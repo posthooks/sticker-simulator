@@ -29,4 +29,11 @@ If your operating system is an older version, or has a different libc than what
 the pre-built binaries were compiled with, then you'll need to build from source
 using the command above.
 
-To actually use evcxr_jupyte
+To actually use evcxr_jupyter, you'll need Jupyter notbook to be installed.
+* Debian or Ubuntu Linux: `sudo apt install jupyter-notebook`
+* Mac: You might be able to `brew install jupyter`
+* Windows, or if the above options don't work for you, see
+  https://jupyter.org/install
+
+You'll also need the source for the Rust standard library installed. If you
+already use rust-analyzer, you'll likel
