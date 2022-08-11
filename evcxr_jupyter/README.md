@@ -55,4 +55,12 @@ on the right and from it, select "Rust".
 
 ## Usage information
 
-Evcxr is both a REPL and a Jupyter kernel. See [Evcxr 
+Evcxr is both a REPL and a Jupyter kernel. See [Evcxr common
+usage](https://github.com/evcxr/evcxr/blob/main/COMMON.md) for information that is common
+to both.
+
+## Custom output
+
+The last expression in a cell gets printed. By default, we'll use the debug
+formatter to emit plain text. If you'd like, you can provide a function to show
+your type (or someone else's type) as HTML (or an image). 
