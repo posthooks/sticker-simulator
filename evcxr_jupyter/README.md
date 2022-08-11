@@ -63,4 +63,10 @@ to both.
 
 The last expression in a cell gets printed. By default, we'll use the debug
 formatter to emit plain text. If you'd like, you can provide a function to show
-your type (or someone else's type) as HTML (or an image). 
+your type (or someone else's type) as HTML (or an image). To do this, the type
+needs to implement a method called ```evcxr_display``` which should then print
+one or more mime-typed blocks to stdout. Each block starts with a line
+containing EVCXR\_BEGIN\_CONTENT followed by the mime type, then a newline, the
+content then ends with a line containing EVCXR\_END\_CONTENT.
+
+For example, the following shows how you might prov
