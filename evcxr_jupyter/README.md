@@ -69,4 +69,14 @@ one or more mime-typed blocks to stdout. Each block starts with a line
 containing EVCXR\_BEGIN\_CONTENT followed by the mime type, then a newline, the
 content then ends with a line containing EVCXR\_END\_CONTENT.
 
-For example, the following shows how you might prov
+For example, the following shows how you might provide a custom display function for a
+type Matrix. You can copy this code into a Jupyter notebook cell to try it out.
+
+```rust
+use std::fmt::Debug;
+pub struct Matrix<T> {pub values: Vec<T>, pub row_size: usize}
+impl<T: Debug> Matrix<T> {
+    pub fn evcxr_display(&self) {
+        let mut html = String::new();
+        html.push_str("<table>");
+        for 
