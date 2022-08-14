@@ -89,3 +89,15 @@ impl<T: Debug> Matrix<T> {
             html.push_str("</tr>");
         }
         html.push_str("</table>");
+        println!("EVCXR_BEGIN_CONTENT text/html\n{}\nEVCXR_END_CONTENT", html);
+    }
+}
+let m = Matrix {values: vec![1,2,3,4,5,6,7,8,9], row_size: 3};
+m
+```
+
+It's probably a good idea to either print the whole block at once, or to lock
+stdout then print the block. This should ensure that nothing else prints to
+stdout at the same time (at least no other Rust code).
+
+If the
