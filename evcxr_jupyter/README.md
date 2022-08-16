@@ -100,4 +100,19 @@ It's probably a good idea to either print the whole block at once, or to lock
 stdout then print the block. This should ensure that nothing else prints to
 stdout at the same time (at least no other Rust code).
 
-If the
+If the content is binary (e.g. mime type "image/png") then it should be base64
+encoded.
+
+## Prompting for input
+
+```rust
+:dep evcxr_input
+let name = evcxr_input::get_string("Name?");
+let password = evcxr_input::get_password("Password?");
+```
+
+## Installing from git head
+
+If there's a bugfix in git that you'd like to try out, you can install directly
+from git with the command:
+
