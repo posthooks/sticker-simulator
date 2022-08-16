@@ -116,3 +116,15 @@ let password = evcxr_input::get_password("Password?");
 If there's a bugfix in git that you'd like to try out, you can install directly
 from git with the command:
 
+```sh
+cargo install --force --git https://github.com/evcxr/evcxr.git evcxr_jupyter
+```
+
+## 3rd party integrations
+
+There are several Rust crates that provide Evcxr integration:
+
+* [Petgraph](https://crates.io/crates/petgraph-evcxr)
+  * Graphs (the kind with nodes and edges)
+* [Plotly](https://igiagkiozis.github.io/plotly/content/fundamentals/jupyter_support.html)
+  * Lots of different k
