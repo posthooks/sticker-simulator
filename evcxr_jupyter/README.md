@@ -127,4 +127,13 @@ There are several Rust crates that provide Evcxr integration:
 * [Petgraph](https://crates.io/crates/petgraph-evcxr)
   * Graphs (the kind with nodes and edges)
 * [Plotly](https://igiagkiozis.github.io/plotly/content/fundamentals/jupyter_support.html)
-  * Lots of different k
+  * Lots of different kinds of charts
+* [Plotters](https://crates.io/crates/plotchart#trying-with-jupyter-evcxr-kernel-interactively)
+  * Charts
+* [Showata](https://crates.io/crates/showata)
+  * Displays images, vectors, matrices (nalgebra and ndarray)
+
+## 3rd party resources
+
+* Dr. Shahin Rostami has written a book [Data Analysis with Rust
+  Notebooks](https://datacrayon.com/shop/product/data-analysis-with-rust-notebooks/). H
