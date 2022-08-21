@@ -39,4 +39,12 @@ define([
 
     function lintText(text) {
         return new Promise(function (resolve, reject) {
-            let cargoCheckComm = Jupyter.notebook.kernel.comm_manager.new_comm('evcxr
+            let cargoCheckComm = Jupyter.notebook.kernel.comm_manager.new_comm('evcxr-cargo-check', {
+                code: text,
+            });
+            cargoCheckComm.on_msg(function (msg) {
+                let found = [];
+                for (let problem of msg.content.data.problems) {
+                    found.push({
+                        from: CodeMirror.Pos(problem.start_line - 1, problem.start_column - 1),
+                        to: CodeMirror.Pos(
