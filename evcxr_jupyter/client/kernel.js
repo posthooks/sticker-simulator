@@ -27,4 +27,16 @@ define([
         cell.code_mirror.setOption('lint', true);
     }
 
-   
+    function cellCreated(event, nbcell) {
+        initCell(nbcell.cell);
+    }
+
+    function initExistingCells() {
+        for (let cell of Jupyter.notebook.get_cells()) {
+            initCell(cell);
+        }
+    }
+
+    function lintText(text) {
+        return new Promise(function (resolve, reject) {
+            let cargoCheckComm = Jupyter.notebook.kernel.comm_manager.new_comm('evcxr
