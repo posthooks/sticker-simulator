@@ -47,4 +47,17 @@ define([
                 for (let problem of msg.content.data.problems) {
                     found.push({
                         from: CodeMirror.Pos(problem.start_line - 1, problem.start_column - 1),
-                        to: CodeMirror.Pos(
+                        to: CodeMirror.Pos(problem.end_line - 1, problem.end_column - 1),
+                        severity: problem.severity,
+                        message: problem.message,
+                    });
+                }
+                resolve(found);
+            });
+        });
+    }
+
+    return {
+        onload: function () {
+            $('head').append(
+                $('<link rel="stylesheet" type="text/
