@@ -60,4 +60,12 @@ define([
     return {
         onload: function () {
             $('head').append(
-                $('<link rel="stylesheet" type="text/
+                $('<link rel="stylesheet" type="text/css" />').attr('href', requireJs.toUrl('./lint.css'))
+            )
+            events.on('create.Cell', cellCreated);
+            initExistingCells();
+            CodeMirror.registerHelper("lint", "rust", lintText);
+        }
+    }
+
+});
