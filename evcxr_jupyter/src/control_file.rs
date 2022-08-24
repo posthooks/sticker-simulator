@@ -12,4 +12,19 @@
 
 use anyhow::anyhow;
 use anyhow::Result;
-use std:
+use std::fs;
+
+#[derive(Debug, Clone)]
+pub(crate) struct Control {
+    pub(crate) control_port: u16,
+    pub(crate) shell_port: u16,
+    pub(crate) stdin_port: u16,
+    pub(crate) hb_port: u16,
+    pub(crate) iopub_port: u16,
+    pub(crate) transport: String,
+    pub(crate) ip: String,
+    pub(crate) key: String,
+}
+
+macro_rules! parse_to_var {
+    ($control_json:expr, $name:ide
