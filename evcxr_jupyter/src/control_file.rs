@@ -27,4 +27,14 @@ pub(crate) struct Control {
 }
 
 macro_rules! parse_to_var {
-    ($control_json:expr, $name:ide
+    ($control_json:expr, $name:ident, $convert:ident) => {
+        let $name = $control_json[stringify!($name)]
+            .$convert()
+            .ok_or_else(|| anyhow!("Missing JSON field {}", stringify!($name)))?;
+    };
+}
+
+impl Control {
+    pub(crate) fn parse_file(file_name: &str) -> Result<Control> {
+        let control_file_contents = fs::read_to_string(file_name)?;
+        let control_jso
