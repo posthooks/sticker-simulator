@@ -44,4 +44,16 @@ impl Control {
         parse_to_var!(control_json, hb_port, as_u16);
         parse_to_var!(control_json, iopub_port, as_u16);
         parse_to_var!(control_json, transport, as_str);
-        pa
+        parse_to_var!(control_json, ip, as_str);
+        parse_to_var!(control_json, key, as_str);
+        Ok(Control {
+            control_port,
+            shell_port,
+            stdin_port,
+            hb_port,
+            iopub_port,
+            transport: transport.to_owned(),
+            key: key.to_owned(),
+            ip: ip.to_owned(),
+        })
+   
