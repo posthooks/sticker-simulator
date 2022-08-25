@@ -37,4 +37,11 @@ macro_rules! parse_to_var {
 impl Control {
     pub(crate) fn parse_file(file_name: &str) -> Result<Control> {
         let control_file_contents = fs::read_to_string(file_name)?;
-        let control_jso
+        let control_json = json::parse(&control_file_contents)?;
+        parse_to_var!(control_json, control_port, as_u16);
+        parse_to_var!(control_json, shell_port, as_u16);
+        parse_to_var!(control_json, stdin_port, as_u16);
+        parse_to_var!(control_json, hb_port, as_u16);
+        parse_to_var!(control_json, iopub_port, as_u16);
+        parse_to_var!(control_json, transport, as_str);
+        pa
