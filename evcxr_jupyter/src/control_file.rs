@@ -56,4 +56,5 @@ impl Control {
             key: key.to_owned(),
             ip: ip.to_owned(),
         })
-   
+    }
+}
