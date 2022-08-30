@@ -29,3 +29,16 @@ pub(crate) struct Server {
     latest_execution_request: Arc<Mutex<Option<JupyterMessage>>>,
     shutdown_sender: Arc<Mutex<Option<crossbeam_channel::Sender<()>>>>,
     tokio_handle: tokio::runtime::Handle,
+}
+
+struct ShutdownReceiver {
+    // Note, this needs to be a crossbeam channel because
+    // start_output_pass_through_thread selects on this and other crossbeam
+    // channels.
+    recv: crossbeam_channel::Receiver<()>,
+}
+
+impl Server {
+    pub(crate) fn run(config: &control_file::Control) -> Result<()> {
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            // We
