@@ -21,4 +21,11 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
 
-// Note, to avoid potential deadlocks, e
+// Note, to avoid potential deadlocks, each thread should lock at most one mutex at a time.
+#[derive(Clone)]
+pub(crate) struct Server {
+    iopub: Arc<Mutex<Connection<zeromq::PubSocket>>>,
+    stdin: Arc<Mutex<Connection<zeromq::RouterSocket>>>,
+    latest_execution_request: Arc<Mutex<Option<JupyterMessage>>>,
+    shutdown_sender: Arc<Mutex<Option<crossbeam_channel::Sender<()>>>>,
+    tokio_handle: tokio::runtime::Handle,
