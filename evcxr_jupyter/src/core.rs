@@ -66,4 +66,10 @@ impl Server {
 
     async fn start(
         config: &control_file::Control,
-        tokio_handle: tokio::runtime::Han
+        tokio_handle: tokio::runtime::Handle,
+    ) -> Result<ShutdownReceiver> {
+        let mut heartbeat = bind_socket::<zeromq::RepSocket>(config, config.hb_port).await?;
+        let shell_socket = bind_socket::<zeromq::RouterSocket>(config, config.shell_port).await?;
+        let control_socket =
+            bind_socket::<zeromq::RouterSocket>(config, config.control_port).await?;
+        let stdin_socket = bind_socket:
