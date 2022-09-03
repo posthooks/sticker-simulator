@@ -55,4 +55,15 @@ impl Server {
             .build()
             .unwrap();
         let handle = runtime.handle().clone();
-        runti
+        runtime.block_on(async {
+            let shutdown_receiver = Self::start(config, handle).await?;
+            shutdown_receiver.wait_for_shutdown().await;
+            let result: Result<()> = Ok(());
+            result
+        })?;
+        Ok(())
+    }
+
+    async fn start(
+        config: &control_file::Control,
+        tokio_handle: tokio::runtime::Han
