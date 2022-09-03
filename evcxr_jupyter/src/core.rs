@@ -46,4 +46,13 @@ impl Server {
             // shell socket before we have any subscribers on iopub. The iopub
             // subscription then completes, but the execution_state="idle"
             // message(s) have already been sent to a channel that at the time
-            // had no subscriptions. The vscode extensi
+            // had no subscriptions. The vscode extension then waits
+            // indefinitely for an execution_state="idle" message that will
+            // never come. Having multiple threads at least reduces the chances
+            // of this happening.
+            .worker_threads(4)
+            .enable_all()
+            .build()
+            .unwrap();
+        let handle = runtime.handle().clone();
+        runti
