@@ -72,4 +72,12 @@ impl Server {
         let shell_socket = bind_socket::<zeromq::RouterSocket>(config, config.shell_port).await?;
         let control_socket =
             bind_socket::<zeromq::RouterSocket>(config, config.control_port).await?;
-        let stdin_socket = bind_socket:
+        let stdin_socket = bind_socket::<zeromq::RouterSocket>(config, config.stdin_port).await?;
+        let iopub_socket = bind_socket::<zeromq::PubSocket>(config, config.iopub_port).await?;
+        let iopub = Arc::new(Mutex::new(iopub_socket));
+
+        let (shutdown_sender, shutdown_receiver) = crossbeam_channel::unbounded();
+
+        let server = Server {
+            iopub,
+            l
