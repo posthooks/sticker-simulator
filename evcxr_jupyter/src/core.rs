@@ -105,4 +105,15 @@ impl Server {
                 if let Err(error) = server.handle_control(control_socket, process_handle).await {
                     eprintln!("control error: {error:?}");
                 }
-            })
+            });
+        }
+        {
+            let context = context.clone();
+            let server = server.clone();
+            tokio::spawn(async move {
+                let result = server
+                    .handle_shell(
+                        shell_socket,
+                        &execution_sender,
+                        &mut execution_response_receiver,
+     
