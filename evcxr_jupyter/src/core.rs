@@ -87,4 +87,14 @@ impl Server {
         };
 
         let (execution_sender, mut execution_receiver) = tokio::sync::mpsc::unbounded_channel();
-        let (execution_response_sender, mut execution_respo
+        let (execution_response_sender, mut execution_response_receiver) =
+            tokio::sync::mpsc::unbounded_channel();
+
+        tokio::spawn(async move {
+            if let Err(error) = Self::handle_hb(&mut heartbeat).await {
+                eprintln!("hb error: {error:?}");
+            }
+        });
+        let (mut context, outputs) = CommandContext::new()?;
+        context.execute(":load_config")?;
+        let
