@@ -97,4 +97,12 @@ impl Server {
         });
         let (mut context, outputs) = CommandContext::new()?;
         context.execute(":load_config")?;
-        let
+        let process_handle = context.process_handle();
+        let context = Arc::new(std::sync::Mutex::new(context));
+        {
+            let server = server.clone();
+            tokio::spawn(async move {
+                if let Err(error) = server.handle_control(control_socket, process_handle).await {
+                    eprintln!("control error: {error:?}");
+                }
+            })
