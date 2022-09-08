@@ -80,4 +80,11 @@ impl Server {
 
         let server = Server {
             iopub,
-            l
+            latest_execution_request: Arc::new(Mutex::new(None)),
+            stdin: Arc::new(Mutex::new(stdin_socket)),
+            shutdown_sender: Arc::new(Mutex::new(Some(shutdown_sender))),
+            tokio_handle,
+        };
+
+        let (execution_sender, mut execution_receiver) = tokio::sync::mpsc::unbounded_channel();
+        let (execution_response_sender, mut execution_respo
