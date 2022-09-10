@@ -128,4 +128,15 @@ impl Server {
             let server = server.clone();
             tokio::spawn(async move {
                 let result = server
-                    .han
+                    .handle_execution_requests(
+                        &context,
+                        &mut execution_receiver,
+                        &execution_response_sender,
+                    )
+                    .await;
+                if let Err(error) = result {
+                    eprintln!("execution error: {error:?}");
+                }
+            });
+        }
+ 
