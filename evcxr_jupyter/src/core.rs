@@ -139,4 +139,17 @@ impl Server {
                 }
             });
         }
- 
+        server
+            .clone()
+            .start_output_pass_through_thread(
+                vec![("stdout", outputs.stdout), ("stderr", outputs.stderr)],
+                shutdown_receiver.clone(),
+            )
+            .await;
+        Ok(ShutdownReceiver {
+            recv: shutdown_receiver,
+        })
+    }
+
+    async fn signal_shutdown(&mut self) {
+     
