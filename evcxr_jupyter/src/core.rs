@@ -116,4 +116,16 @@ impl Server {
                         shell_socket,
                         &execution_sender,
                         &mut execution_response_receiver,
-     
+                        context,
+                    )
+                    .await;
+                if let Err(error) = result {
+                    eprintln!("shell error: {error:?}");
+                }
+            });
+        }
+        {
+            let server = server.clone();
+            tokio::spawn(async move {
+                let result = server
+                    .han
