@@ -173,4 +173,15 @@ impl Server {
         receiver: &mut tokio::sync::mpsc::UnboundedReceiver<JupyterMessage>,
         execution_reply_sender: &tokio::sync::mpsc::UnboundedSender<JupyterMessage>,
     ) -> Result<()> {
-        let mu
+        let mut execution_count = 1;
+        loop {
+            let message = match receiver.recv().await {
+                Some(x) => x,
+                None => {
+                    // Other end has closed. This is expected when we're shuting
+                    // down.
+                    return Ok(());
+                }
+            };
+
+            // If we want this clone to be cheaper,
