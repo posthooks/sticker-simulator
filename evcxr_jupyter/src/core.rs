@@ -163,4 +163,14 @@ impl Server {
             connection
                 .socket
                 .send(zeromq::ZmqMessage::from(b"ping".to_vec()))
-                .awa
+                .await?;
+        }
+    }
+
+    async fn handle_execution_requests(
+        self,
+        context: &Arc<std::sync::Mutex<CommandContext>>,
+        receiver: &mut tokio::sync::mpsc::UnboundedReceiver<JupyterMessage>,
+        execution_reply_sender: &tokio::sync::mpsc::UnboundedSender<JupyterMessage>,
+    ) -> Result<()> {
+        let mu
