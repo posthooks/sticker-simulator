@@ -152,4 +152,15 @@ impl Server {
     }
 
     async fn signal_shutdown(&mut self) {
-     
+        self.shutdown_sender.lock().await.take();
+    }
+
+    async fn handle_hb(connection: &mut Connection<zeromq::RepSocket>) -> Result<()> {
+        use zeromq::SocketRecv;
+        use zeromq::SocketSend;
+        loop {
+            connection.socket.recv().await?;
+            connection
+                .socket
+                .send(zeromq::ZmqMessage::from(b"ping".to_vec()))
+                .awa
