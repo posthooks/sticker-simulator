@@ -192,4 +192,13 @@ impl Server {
             message
                 .new_message("execute_input")
                 .with_content(object! {
-                    "execut
+                    "execution_count" => execution_count,
+                    "code" => src
+                })
+                .send(&mut *self.iopub.lock().await)
+                .await?;
+
+            let context = Arc::clone(context);
+            let server = self.clone();
+            let (eval_result, message) = tokio::task::spawn_blocking(move || {
+                let eval_result = context.lock().unw
