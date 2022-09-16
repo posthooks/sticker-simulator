@@ -184,4 +184,12 @@ impl Server {
                 }
             };
 
-            // If we want this clone to be cheaper,
+            // If we want this clone to be cheaper, we probably only need the header, not the
+            // whole message.
+            *self.latest_execution_request.lock().await = Some(message.clone());
+            let src = message.code().to_owned();
+            execution_count += 1;
+            message
+                .new_message("execute_input")
+                .with_content(object! {
+                    "execut
