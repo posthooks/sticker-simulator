@@ -208,4 +208,14 @@ impl Server {
                             server.tokio_handle.block_on(async {
                                 server
                                     .request_input(
-                                        &messa
+                                        &message,
+                                        &input_request.prompt,
+                                        input_request.is_password,
+                                    )
+                                    .await
+                                    .unwrap_or_default()
+                            })
+                        },
+                    },
+                );
+        
