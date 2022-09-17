@@ -218,4 +218,12 @@ impl Server {
                         },
                     },
                 );
-        
+                (eval_result, message)
+            })
+            .await?;
+            match eval_result {
+                Ok(output) => {
+                    if !output.is_empty() {
+                        // Increase the odds that stdout will have been finished being sent. A
+                        // less hacky alternative would be to add a print statement, then block
+                       
