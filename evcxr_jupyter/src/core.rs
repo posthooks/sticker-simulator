@@ -201,4 +201,11 @@ impl Server {
             let context = Arc::clone(context);
             let server = self.clone();
             let (eval_result, message) = tokio::task::spawn_blocking(move || {
-                let eval_result = context.lock().unw
+                let eval_result = context.lock().unwrap().execute_with_callbacks(
+                    message.code(),
+                    &mut evcxr::EvalCallbacks {
+                        input_reader: &|input_request| {
+                            server.tokio_handle.block_on(async {
+                                server
+                                    .request_input(
+                                        &messa
