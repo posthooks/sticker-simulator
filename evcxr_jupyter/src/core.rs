@@ -226,4 +226,9 @@ impl Server {
                     if !output.is_empty() {
                         // Increase the odds that stdout will have been finished being sent. A
                         // less hacky alternative would be to add a print statement, then block
-                       
+                        // waiting for it.
+                        tokio::time::sleep(Duration::from_millis(1)).await;
+                        let mut data = HashMap::new();
+                        // At the time of writing the json crate appears to have a generic From
+                        // implementation for a Vec<T> where T implements Into<JsonValue>. It also
+                        // has conversion fr
