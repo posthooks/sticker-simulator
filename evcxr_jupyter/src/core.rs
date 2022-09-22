@@ -244,4 +244,12 @@ impl Server {
                         message
                             .new_message("execute_result")
                             .with_content(object! {
-                               
+                                "execution_count" => execution_count,
+                                "data" => data,
+                                "metadata" => object!(),
+                            })
+                            .send(&mut *self.iopub.lock().await)
+                            .await?;
+                    }
+                    if let Some(duration) = output.timing {
+                        // TODO replace by duration.as_mill
