@@ -231,4 +231,9 @@ impl Server {
                         let mut data = HashMap::new();
                         // At the time of writing the json crate appears to have a generic From
                         // implementation for a Vec<T> where T implements Into<JsonValue>. It also
-                        // has conversion fr
+                        // has conversion from HashMap<String, JsonValue>, but it doesn't have
+                        // conversion from HashMap<String, T>. Perhaps send a PR? For now, we
+                        // convert the values manually.
+                        for (k, v) in output.content_by_mime_type {
+                            if k.contains("json") {
+                                data.insert
