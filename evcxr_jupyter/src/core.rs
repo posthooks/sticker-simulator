@@ -236,4 +236,12 @@ impl Server {
                         // convert the values manually.
                         for (k, v) in output.content_by_mime_type {
                             if k.contains("json") {
-                                data.insert
+                                data.insert(k, json::parse(&v).unwrap_or_else(|_| json::from(v)));
+                            } else {
+                                data.insert(k, json::from(v));
+                            }
+                        }
+                        message
+                            .new_message("execute_result")
+                            .with_content(object! {
+                               
