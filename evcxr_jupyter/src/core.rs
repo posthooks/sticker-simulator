@@ -252,4 +252,10 @@ impl Server {
                             .await?;
                     }
                     if let Some(duration) = output.timing {
-                        // TODO replace by duration.as_mill
+                        // TODO replace by duration.as_millis() when stable
+                        let ms = duration.as_secs() * 1000 + u64::from(duration.subsec_millis());
+                        let mut data: HashMap<String, JsonValue> = HashMap::new();
+                        data.insert(
+                            "text/html".into(),
+                            json::from(format!(
+                                "<span style=\"color: rgba(0
