@@ -258,4 +258,12 @@ impl Server {
                         data.insert(
                             "text/html".into(),
                             json::from(format!(
-                                "<span style=\"color: rgba(0
+                                "<span style=\"color: rgba(0,0,0,0.4);\">Took {}ms</span>",
+                                ms
+                            )),
+                        );
+                        message
+                            .new_message("execute_result")
+                            .with_content(object! {
+                                "execution_count" => execution_count,
+                                "d
