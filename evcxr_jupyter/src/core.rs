@@ -274,4 +274,12 @@ impl Server {
                     }
                     execution_reply_sender.send(message.new_reply().with_content(object! {
                         "status" => "ok",
-                        
+                        "execution_count" => execution_count,
+                    }))?;
+                }
+                Err(errors) => {
+                    self.emit_errors(&errors, &message, message.code(), execution_count)
+                        .await?;
+                    execution_reply_sender.send(message.new_reply().with_content(object! {
+                        "status" => "error",
+    
