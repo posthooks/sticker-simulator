@@ -266,4 +266,12 @@ impl Server {
                             .new_message("execute_result")
                             .with_content(object! {
                                 "execution_count" => execution_count,
-                                "d
+                                "data" => data,
+                                "metadata" => object!(),
+                            })
+                            .send(&mut *self.iopub.lock().await)
+                            .await?;
+                    }
+                    execution_reply_sender.send(message.new_reply().with_content(object! {
+                        "status" => "ok",
+                        
