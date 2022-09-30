@@ -296,3 +296,16 @@ impl Server {
         password: bool,
     ) -> Option<String> {
         if current_request.get_content()["allow_stdin"].as_bool() != Some(true) {
+            return None;
+        }
+        let mut stdin = self.stdin.lock().await;
+        let stdin_request = current_request
+            .new_reply()
+            .with_message_type("input_request")
+            .with_content(object! {
+                "prompt" => prompt,
+                "password" => password,
+            });
+        stdin_request.send(&mut *stdin).await.ok()?;
+
+        let
