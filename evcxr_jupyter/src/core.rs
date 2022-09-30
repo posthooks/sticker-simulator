@@ -282,4 +282,17 @@ impl Server {
                         .await?;
                     execution_reply_sender.send(message.new_reply().with_content(object! {
                         "status" => "error",
-    
+                        "execution_count" => execution_count
+                    }))?;
+                }
+            };
+        }
+    }
+
+    async fn request_input(
+        &self,
+        current_request: &JupyterMessage,
+        prompt: &str,
+        password: bool,
+    ) -> Option<String> {
+        if current_request.get_content()["allow_stdin"].as_bool() != Some(true) {
