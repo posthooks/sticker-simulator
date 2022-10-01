@@ -308,4 +308,13 @@ impl Server {
             });
         stdin_request.send(&mut *stdin).await.ok()?;
 
-        let
+        let input_response = JupyterMessage::read(&mut *stdin).await.ok()?;
+        input_response.get_content()["value"]
+            .as_str()
+            .map(|value| value.to_owned())
+    }
+
+    async fn handle_shell<S: zeromq::SocketRecv + zeromq::SocketSend>(
+        self,
+        mut connection: Connection<S>,
+        execution_channel: &tokio::sync::mpsc::Unbounde
