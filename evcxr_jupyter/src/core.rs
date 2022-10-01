@@ -317,4 +317,12 @@ impl Server {
     async fn handle_shell<S: zeromq::SocketRecv + zeromq::SocketSend>(
         self,
         mut connection: Connection<S>,
-        execution_channel: &tokio::sync::mpsc::Unbounde
+        execution_channel: &tokio::sync::mpsc::UnboundedSender<JupyterMessage>,
+        execution_reply_receiver: &mut tokio::sync::mpsc::UnboundedReceiver<JupyterMessage>,
+        context: Arc<std::sync::Mutex<CommandContext>>,
+    ) -> Result<()> {
+        loop {
+            let message = JupyterMessage::read(&mut connection).await?;
+            self.handle_shell_message(
+                message,
+             
