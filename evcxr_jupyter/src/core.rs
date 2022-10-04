@@ -325,4 +325,17 @@ impl Server {
             let message = JupyterMessage::read(&mut connection).await?;
             self.handle_shell_message(
                 message,
-             
+                &mut connection,
+                execution_channel,
+                execution_reply_receiver,
+                &context,
+            )
+            .await?;
+        }
+    }
+
+    async fn handle_shell_message<S: zeromq::SocketRecv + zeromq::SocketSend>(
+        &self,
+        message: JupyterMessage,
+        connection: &mut Connection<S>,
+       
