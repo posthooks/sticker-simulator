@@ -338,4 +338,9 @@ impl Server {
         &self,
         message: JupyterMessage,
         connection: &mut Connection<S>,
-       
+        execution_channel: &tokio::sync::mpsc::UnboundedSender<JupyterMessage>,
+        execution_reply_receiver: &mut tokio::sync::mpsc::UnboundedReceiver<JupyterMessage>,
+        context: &Arc<std::sync::Mutex<CommandContext>>,
+    ) -> Result<()> {
+        // Processing of every message should be enclosed between "busy" and "idle"
+        // se
