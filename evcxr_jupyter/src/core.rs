@@ -351,4 +351,12 @@ impl Server {
             .send(&mut *self.iopub.lock().await)
             .await?;
         let idle = message
- 
+            .new_message("status")
+            .with_content(object! {"execution_state" => "idle"});
+        if message.message_type() == "kernel_info_request" {
+            message
+                .new_reply()
+                .with_content(kernel_info())
+                .send(connection)
+                .await?;
+        } else if message.message_type() == "is_comp
