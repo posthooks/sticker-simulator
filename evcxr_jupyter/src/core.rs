@@ -343,4 +343,12 @@ impl Server {
         context: &Arc<std::sync::Mutex<CommandContext>>,
     ) -> Result<()> {
         // Processing of every message should be enclosed between "busy" and "idle"
-        // se
+        // see https://jupyter-client.readthedocs.io/en/latest/messaging.html#messages-on-the-shell-router-dealer-channel
+        // Jupiter Lab doesn't use the kernel until it received "idle" for kernel_info_request
+        message
+            .new_message("status")
+            .with_content(object! {"execution_state" => "busy"})
+            .send(&mut *self.iopub.lock().await)
+            .await?;
+        let idle = message
+ 
