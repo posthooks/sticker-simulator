@@ -382,4 +382,15 @@ impl Server {
                     Ok(response_content) => response_content,
                     Err(error) => object! {
                         "status" => "error",
-                        "ename" => error.to_string(
+                        "ename" => error.to_string(),
+                        "evalue" => "",
+                    },
+                },
+            );
+            reply.send(connection).await?;
+        } else if message.message_type() == "history_request" {
+            // We don't yet support history requests, but we don't want to print
+            // a message in jupyter console.
+        } else {
+            eprintln!(
+                "Got unrecognized m
