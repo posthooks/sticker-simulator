@@ -368,4 +368,11 @@ impl Server {
         } else if message.message_type() == "execute_request" {
             execution_channel.send(message)?;
             if let Some(reply) = execution_reply_receiver.recv().await {
-            
+                reply.send(connection).await?;
+            }
+        } else if message.message_type() == "comm_open" {
+            comm_open(message, context, Arc::clone(&self.iopub)).await?;
+        } else if message.message_type() == "comm_msg"
+            || message.message_type() == "comm_info_request"
+        {
+            // We don't handle this yet.
