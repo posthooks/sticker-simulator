@@ -376,3 +376,10 @@ impl Server {
             || message.message_type() == "comm_info_request"
         {
             // We don't handle this yet.
+        } else if message.message_type() == "complete_request" {
+            let reply = message.new_reply().with_content(
+                match handle_completion_request(context, message).await {
+                    Ok(response_content) => response_content,
+                    Err(error) => object! {
+                        "status" => "error",
+                        "ename" => error.to_string(
