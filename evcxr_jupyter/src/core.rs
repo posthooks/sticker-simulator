@@ -359,4 +359,13 @@ impl Server {
                 .with_content(kernel_info())
                 .send(connection)
                 .await?;
-        } else if message.message_type() == "is_comp
+        } else if message.message_type() == "is_complete_request" {
+            message
+                .new_reply()
+                .with_content(object! {"status" => "complete"})
+                .send(connection)
+                .await?;
+        } else if message.message_type() == "execute_request" {
+            execution_channel.send(message)?;
+            if let Some(reply) = execution_reply_receiver.recv().await {
+            
