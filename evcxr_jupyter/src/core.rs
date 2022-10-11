@@ -393,4 +393,16 @@ impl Server {
             // a message in jupyter console.
         } else {
             eprintln!(
-                "Got unrecognized m
+                "Got unrecognized message type on shell channel: {}",
+                message.message_type()
+            );
+        }
+        idle.send(&mut *self.iopub.lock().await).await?;
+        Ok(())
+    }
+
+    async fn handle_control(
+        mut self,
+        mut connection: Connection<zeromq::RouterSocket>,
+        process_handle: Arc<std::sync::Mutex<std::process::Child>>,
+    ) -> 
