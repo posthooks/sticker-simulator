@@ -420,4 +420,14 @@ impl Server {
                 "interrupt_request" => {
                     let process_handle = process_handle.clone();
                     tokio::task::spawn_blocking(move || {
-                        if let Err(error) = process_handle.lock().unwrap().ki
+                        if let Err(error) = process_handle.lock().unwrap().kill() {
+                            eprintln!("Failed to restart subprocess: {}", error);
+                        }
+                    })
+                    .await?;
+                    message.new_reply().send(&mut connection).await?;
+                }
+                _ => {
+                    eprintln!(
+                        "Got unrecognized message type on control channel: {}",
+     
