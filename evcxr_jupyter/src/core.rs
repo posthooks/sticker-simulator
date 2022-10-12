@@ -405,4 +405,12 @@ impl Server {
         mut self,
         mut connection: Connection<zeromq::RouterSocket>,
         process_handle: Arc<std::sync::Mutex<std::process::Child>>,
-    ) -> 
+    ) -> Result<()> {
+        loop {
+            let message = JupyterMessage::read(&mut connection).await?;
+            match message.message_type() {
+                "kernel_info_request" => {
+                    message
+                        .new_reply()
+                        .with_content(kernel_info())
+                        .send(&mut connectio
