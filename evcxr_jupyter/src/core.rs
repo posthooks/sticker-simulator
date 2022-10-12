@@ -430,4 +430,17 @@ impl Server {
                 _ => {
                     eprintln!(
                         "Got unrecognized message type on control channel: {}",
-     
+                        message.message_type()
+                    );
+                }
+            }
+        }
+    }
+
+    async fn start_output_pass_through_thread(
+        self,
+        channels: Vec<(&'static str, crossbeam_channel::Receiver<String>)>,
+        shutdown_recv: crossbeam_channel::Receiver<()>,
+    ) {
+        tokio::task::spawn_blocking(move || {
+            let mut select 
