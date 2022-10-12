@@ -413,4 +413,11 @@ impl Server {
                     message
                         .new_reply()
                         .with_content(kernel_info())
-                        .send(&mut connectio
+                        .send(&mut connection)
+                        .await?
+                }
+                "shutdown_request" => self.signal_shutdown().await,
+                "interrupt_request" => {
+                    let process_handle = process_handle.clone();
+                    tokio::task::spawn_blocking(move || {
+                        if let Err(error) = process_handle.lock().unwrap().ki
