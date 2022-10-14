@@ -443,4 +443,14 @@ impl Server {
         shutdown_recv: crossbeam_channel::Receiver<()>,
     ) {
         tokio::task::spawn_blocking(move || {
-            let mut select 
+            let mut select = Select::new();
+            for (_, channel) in &channels {
+                select.recv(channel);
+            }
+            let shutdown_index = select.recv(&shutdown_recv);
+            loop {
+                let index = select.ready();
+                if index == shutdown_index {
+                    return;
+                }
+                let (outp
