@@ -458,4 +458,9 @@ impl Server {
                 let output_name: &'static str = output_name;
                 // Read from the channel that has output until it has been idle
                 // for 1ms before we return to checking other channels. This
-             
+                // reduces the extent to which outputs interleave. e.g. a
+                // multi-line print is performed to stderr, then another to
+                // stdout - we can't guarantee the order in which they get sent,
+                // but we'd like to try to make sure that we don't interleave
+                // their lines if possible.
+                while let Ok(line) = ch
