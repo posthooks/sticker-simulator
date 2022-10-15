@@ -453,4 +453,9 @@ impl Server {
                 if index == shutdown_index {
                     return;
                 }
-                let (outp
+                let (output_name, channel) = &channels[index];
+                // Needed in order to make the borrow checker happy.
+                let output_name: &'static str = output_name;
+                // Read from the channel that has output until it has been idle
+                // for 1ms before we return to checking other channels. This
+             
