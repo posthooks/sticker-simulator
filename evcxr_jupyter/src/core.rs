@@ -463,4 +463,14 @@ impl Server {
                 // stdout - we can't guarantee the order in which they get sent,
                 // but we'd like to try to make sure that we don't interleave
                 // their lines if possible.
-                while let Ok(line) = ch
+                while let Ok(line) = channel.recv_timeout(Duration::from_millis(1)) {
+                    let server = self.clone();
+                    tokio::task::spawn(async move {
+                        server.pass_output_line(output_name, line).await;
+                    });
+                }
+            }
+        });
+    }
+
+    async fn pass_output_line(&self, output_name: &'static str, line: Strin
