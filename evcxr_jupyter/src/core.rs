@@ -473,4 +473,13 @@ impl Server {
         });
     }
 
-    async fn pass_output_line(&self, output_name: &'static str, line: Strin
+    async fn pass_output_line(&self, output_name: &'static str, line: String) {
+        let mut message = None;
+        if let Some(exec_request) = &*self.latest_execution_request.lock().await {
+            message = Some(exec_request.new_message("stream"));
+        }
+        if let Some(message) = message {
+            if let Err(error) = message
+                .with_content(object! {
+                    "name" => output_name,
+                    "t
