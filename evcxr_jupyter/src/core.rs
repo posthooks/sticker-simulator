@@ -482,4 +482,18 @@ impl Server {
             if let Err(error) = message
                 .with_content(object! {
                     "name" => output_name,
-                    "t
+                    "text" => format!("{}\n", line),
+                })
+                .send(&mut *self.iopub.lock().await)
+                .await
+            {
+                eprintln!("output {output_name} error: {}", error);
+            }
+        }
+    }
+
+    async fn emit_errors(
+        &self,
+        errors: &evcxr::Error,
+        parent_message: &JupyterMessage,
+   
