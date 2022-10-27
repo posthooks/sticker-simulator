@@ -516,4 +516,10 @@ impl Server {
                             let s = String::from_utf8_lossy(&s);
                             traceback = s.lines().map(|x| x.to_string()).collect::<Vec<_>>();
                         } else {
-                            for spanned_message in error.sp
+                            for spanned_message in error.spanned_messages() {
+                                for line in &spanned_message.lines {
+                                    traceback.push(line.clone());
+                                }
+                                if let Some(span) = &spanned_message.span {
+                                    let mut carrots = String::new();
+                                    f
