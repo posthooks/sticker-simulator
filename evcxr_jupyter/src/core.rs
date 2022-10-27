@@ -496,4 +496,12 @@ impl Server {
         &self,
         errors: &evcxr::Error,
         parent_message: &JupyterMessage,
-   
+        source: &str,
+        execution_count: u32,
+    ) -> Result<()> {
+        match errors {
+            evcxr::Error::CompilationErrors(errors) => {
+                for error in errors {
+                    let message = format!("{}", error.message().bright_red());
+                    if error.is_from_user_code() {
+               
