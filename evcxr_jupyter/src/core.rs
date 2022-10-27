@@ -504,4 +504,10 @@ impl Server {
                 for error in errors {
                     let message = format!("{}", error.message().bright_red());
                     if error.is_from_user_code() {
-               
+                        let file_name = format!("command_{}", execution_count);
+                        let mut traceback = Vec::new();
+                        if let Some(report) =
+                            error.build_report(file_name.clone(), source.to_string(), Theme::Light)
+                        {
+                            let mut s = Vec::new();
+           
