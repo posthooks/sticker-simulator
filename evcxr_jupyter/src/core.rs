@@ -510,4 +510,10 @@ impl Server {
                             error.build_report(file_name.clone(), source.to_string(), Theme::Light)
                         {
                             let mut s = Vec::new();
-           
+                            report
+                                .write(sources([(file_name, source.to_string())]), &mut s)
+                                .unwrap();
+                            let s = String::from_utf8_lossy(&s);
+                            traceback = s.lines().map(|x| x.to_string()).collect::<Vec<_>>();
+                        } else {
+                            for spanned_message in error.sp
