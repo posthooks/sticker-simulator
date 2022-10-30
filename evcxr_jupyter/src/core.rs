@@ -522,4 +522,10 @@ impl Server {
                                 }
                                 if let Some(span) = &spanned_message.span {
                                     let mut carrots = String::new();
-                                    f
+                                    for _ in 1..span.start_column {
+                                        carrots.push(' ');
+                                    }
+                                    for _ in span.start_column..span.end_column {
+                                        carrots.push('^');
+                                    }
+                                    tracebac
