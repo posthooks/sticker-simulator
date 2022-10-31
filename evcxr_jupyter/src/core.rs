@@ -528,4 +528,11 @@ impl Server {
                                     for _ in span.start_column..span.end_column {
                                         carrots.push('^');
                                     }
-                                    tracebac
+                                    traceback.push(format!(
+                                        "{} {}",
+                                        carrots.bright_red(),
+                                        spanned_message.label.bright_blue()
+                                    ));
+                                } else {
+                                    traceback.push(spanned_message.label.clone());
+                      
