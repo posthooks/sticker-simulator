@@ -535,4 +535,13 @@ impl Server {
                                     ));
                                 } else {
                                     traceback.push(spanned_message.label.clone());
-                      
+                                }
+                            }
+                            traceback.push(error.message());
+                            for help in error.help() {
+                                traceback.push(format!("{}: {}", "help".bold(), help));
+                            }
+                        }
+                        parent_message
+                            .new_message("error")
+      
