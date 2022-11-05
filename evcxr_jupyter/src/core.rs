@@ -544,4 +544,11 @@ impl Server {
                         }
                         parent_message
                             .new_message("error")
-      
+                            .with_content(object! {
+                                "ename" => "Error",
+                                "evalue" => error.message(),
+                                "traceback" => traceback,
+                            })
+                            .send(&mut *self.iopub.lock().await)
+                            .await?;
+        
