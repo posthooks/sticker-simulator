@@ -551,4 +551,11 @@ impl Server {
                             })
                             .send(&mut *self.iopub.lock().await)
                             .await?;
-        
+                    } else {
+                        parent_message
+                            .new_message("error")
+                            .with_content(object! {
+                                "ename" => "Error",
+                                "evalue" => error.message(),
+                                "traceback" => array![
+                  
