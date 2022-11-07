@@ -558,4 +558,15 @@ impl Server {
                                 "ename" => "Error",
                                 "evalue" => error.message(),
                                 "traceback" => array![
-                  
+                                    message
+                                ],
+                            })
+                            .send(&mut *self.iopub.lock().await)
+                            .await?;
+                    }
+                }
+            }
+            error => {
+                let displayed_error = format!("{}", error);
+                parent_message
+                    .new_message(
