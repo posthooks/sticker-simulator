@@ -569,4 +569,18 @@ impl Server {
             error => {
                 let displayed_error = format!("{}", error);
                 parent_message
-                    .new_message(
+                    .new_message("error")
+                    .with_content(object! {
+                        "ename" => "Error",
+                        "evalue" => displayed_error.clone(),
+                        "traceback" => array![displayed_error],
+                    })
+                    .send(&mut *self.iopub.lock().await)
+                    .await?;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl ShutdownReceiver 
