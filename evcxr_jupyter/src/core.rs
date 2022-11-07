@@ -583,4 +583,15 @@ impl Server {
     }
 }
 
-impl ShutdownReceiver 
+impl ShutdownReceiver {
+    async fn wait_for_shutdown(self) {
+        let _ = tokio::task::spawn_blocking(move || self.recv.recv()).await;
+    }
+}
+
+async fn comm_open(
+    message: JupyterMessage,
+    context: &Arc<std::sync::Mutex<CommandContext>>,
+    iopub: Arc<Mutex<Connection<zeromq::PubSocket>>>,
+) -> Result<()> {
+    if message.target_name() == "evcxr-cargo-check" 
