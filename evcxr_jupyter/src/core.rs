@@ -594,4 +594,12 @@ async fn comm_open(
     context: &Arc<std::sync::Mutex<CommandContext>>,
     iopub: Arc<Mutex<Connection<zeromq::PubSocket>>>,
 ) -> Result<()> {
-    if message.target_name() == "evcxr-cargo-check" 
+    if message.target_name() == "evcxr-cargo-check" {
+        let context = Arc::clone(context);
+        tokio::spawn(async move {
+            if let Some(code) = message.data()["code"].as_str() {
+                let data = cargo_check(code.to_owned(), context).await;
+                let response_content = object! {
+                    "comm_id" => message.comm_id(),
+                    "data" => data,
+                };
