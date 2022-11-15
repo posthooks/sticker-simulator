@@ -603,3 +603,14 @@ async fn comm_open(
                     "comm_id" => message.comm_id(),
                     "data" => data,
                 };
+                message
+                    .new_message("comm_msg")
+                    .without_parent_header()
+                    .with_content(response_content)
+                    .send(&mut *iopub.lock().await)
+                    .await
+                    .unwrap();
+            }
+            message
+                .comm_close_message()
+              
