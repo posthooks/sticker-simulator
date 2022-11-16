@@ -613,4 +613,18 @@ async fn comm_open(
             }
             message
                 .comm_close_message()
-              
+                .send(&mut *iopub.lock().await)
+                .await
+                .unwrap();
+        });
+        Ok(())
+    } else {
+        // Unrecognised comm target, just close the comm.
+        message
+            .comm_close_message()
+            .send(&mut *iopub.lock().await)
+            .await
+    }
+}
+
+async fn cargo_check(code: String, context: Arc<std::sync::Mutex<Com
