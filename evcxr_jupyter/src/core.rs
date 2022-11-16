@@ -627,4 +627,14 @@ async fn comm_open(
     }
 }
 
-async fn cargo_check(code: String, context: Arc<std::sync::Mutex<Com
+async fn cargo_check(code: String, context: Arc<std::sync::Mutex<CommandContext>>) -> JsonValue {
+    let problems = tokio::task::spawn_blocking(move || {
+        context.lock().unwrap().check(&code).unwrap_or_default()
+    })
+    .await
+    .unwrap_or_default();
+    let problems_json: Vec<JsonValue> = problems
+        .iter()
+        .filter_map(|problem| {
+            if let Some(primary_spanned_message) = problem.primary_spanned_message() {
+                
