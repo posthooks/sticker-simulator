@@ -644,4 +644,11 @@ async fn cargo_check(code: String, context: Arc<std::sync::Mutex<CommandContext>
                         message.push('\n');
                     }
                     message.push_str(&problem.message());
-                    for help in problem.
+                    for help in problem.help() {
+                        write!(message, "\nhelp: {}", help).unwrap();
+                    }
+                    return Some(object! {
+                        "message" => message,
+                        "severity" => problem.level(),
+                        "start_line" => span.start_line,
+                        "start_column" => span.start_c
