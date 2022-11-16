@@ -637,4 +637,11 @@ async fn cargo_check(code: String, context: Arc<std::sync::Mutex<CommandContext>
         .iter()
         .filter_map(|problem| {
             if let Some(primary_spanned_message) = problem.primary_spanned_message() {
-                
+                if let Some(span) = primary_spanned_message.span {
+                    use std::fmt::Write;
+                    let mut message = primary_spanned_message.label.clone();
+                    if !message.is_empty() {
+                        message.push('\n');
+                    }
+                    message.push_str(&problem.message());
+                    for help in problem.
