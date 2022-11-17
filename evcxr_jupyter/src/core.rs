@@ -678,4 +678,12 @@ async fn bind_socket<S: zeromq::Socket>(
 /// See [Kernel info documentation](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)
 fn kernel_info() -> JsonValue {
     object! {
-        "protocol_version" =
+        "protocol_version" => "5.3",
+        "implementation" => env!("CARGO_PKG_NAME"),
+        "implementation_version" => env!("CARGO_PKG_VERSION"),
+        "language_info" => object!{
+            "name" => "Rust",
+            "version" => "",
+            "mimetype" => "text/rust",
+            "file_extension" => ".rs",
+            // Pygments lexer, for highlighting Only needed if it differs from t
