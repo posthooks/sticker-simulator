@@ -651,4 +651,21 @@ async fn cargo_check(code: String, context: Arc<std::sync::Mutex<CommandContext>
                         "message" => message,
                         "severity" => problem.level(),
                         "start_line" => span.start_line,
-                        "start_column" => span.start_c
+                        "start_column" => span.start_column,
+                        "end_column" => span.end_column,
+                        "end_line" => span.end_line,
+                    });
+                }
+            }
+            None
+        })
+        .collect();
+    object! {
+        "problems" => problems_json,
+    }
+}
+
+async fn bind_socket<S: zeromq::Socket>(
+    config: &control_file::Control,
+    port: u16,
+) -> Result<Con
