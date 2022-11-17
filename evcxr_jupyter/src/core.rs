@@ -668,4 +668,14 @@ async fn cargo_check(code: String, context: Arc<std::sync::Mutex<CommandContext>
 async fn bind_socket<S: zeromq::Socket>(
     config: &control_file::Control,
     port: u16,
-) -> Result<Con
+) -> Result<Connection<S>> {
+    let endpoint = format!("{}://{}:{}", config.transport, config.ip, port);
+    let mut socket = S::new();
+    socket.bind(&endpoint).await?;
+    Connection::new(socket, &config.key)
+}
+
+/// See [Kernel info documentation](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)
+fn kernel_info() -> JsonValue {
+    object! {
+        "protocol_version" =
