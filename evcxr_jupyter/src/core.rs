@@ -686,4 +686,10 @@ fn kernel_info() -> JsonValue {
             "version" => "",
             "mimetype" => "text/rust",
             "file_extension" => ".rs",
-            // Pygments lexer, for highlighting Only needed if it differs from t
+            // Pygments lexer, for highlighting Only needed if it differs from the 'name' field.
+            // see http://pygments.org/docs/lexers/#lexers-for-the-rust-language
+            "pygment_lexer" => "rust",
+            // Codemirror mode, for for highlighting in the notebook. Only needed if it differs from the 'name' field.
+            // codemirror use text/x-rustsrc as mimetypes
+            // see https://codemirror.net/mode/rust/
+        
