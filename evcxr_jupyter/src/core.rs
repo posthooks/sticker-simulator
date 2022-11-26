@@ -692,4 +692,16 @@ fn kernel_info() -> JsonValue {
             // Codemirror mode, for for highlighting in the notebook. Only needed if it differs from the 'name' field.
             // codemirror use text/x-rustsrc as mimetypes
             // see https://codemirror.net/mode/rust/
-        
+            "codemirror_mode" => "rust",
+        },
+        "banner" => format!("EvCxR {} - Evaluation Context for Rust", env!("CARGO_PKG_VERSION")),
+        "help_links" => array![
+            object!{"text" => "Rust std docs",
+                    "url" => "https://doc.rust-lang.org/stable/std/"}
+        ],
+        "status" => "ok"
+    }
+}
+
+async fn handle_completion_request(
+    context: &Arc<st
