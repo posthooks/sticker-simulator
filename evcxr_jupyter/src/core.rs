@@ -704,4 +704,14 @@ fn kernel_info() -> JsonValue {
 }
 
 async fn handle_completion_request(
-    context: &Arc<st
+    context: &Arc<std::sync::Mutex<CommandContext>>,
+    message: JupyterMessage,
+) -> Result<JsonValue> {
+    let context = Arc::clone(context);
+    tokio::task::spawn_blocking(move || {
+        let code = message.code();
+        let completions = context.lock().unwrap().completions(
+            code,
+            grapheme_offset_to_byte_offset(code, message.cursor_pos()),
+        )?;
+        let matches: Vec<Str
