@@ -714,4 +714,13 @@ async fn handle_completion_request(
             code,
             grapheme_offset_to_byte_offset(code, message.cursor_pos()),
         )?;
-        let matches: Vec<Str
+        let matches: Vec<String> = completions
+            .completions
+            .into_iter()
+            .map(|completion| completion.code)
+            .collect();
+        Ok(object! {
+            "status" => "ok",
+            "matches" => matches,
+            "cursor_start" => byte_offset_to_grapheme_offset(code, completions.start_offset)?,
+            "cursor_end" => byte_offset_to_grapheme_offset(code, complet
