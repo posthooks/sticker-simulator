@@ -723,4 +723,14 @@ async fn handle_completion_request(
             "status" => "ok",
             "matches" => matches,
             "cursor_start" => byte_offset_to_grapheme_offset(code, completions.start_offset)?,
-            "cursor_end" => byte_offset_to_grapheme_offset(code, complet
+            "cursor_end" => byte_offset_to_grapheme_offset(code, completions.end_offset)?,
+            "metadata" => object!{},
+        })
+    })
+    .await?
+}
+
+/// Returns the byte offset for the start of the specified grapheme. Any grapheme beyond the last
+/// grapheme will return the end position of the input.
+fn grapheme_offset_to_byte_offset(code: &str, grapheme_offset: usize) -> usize {
+    unicode_segmentation::UnicodeSegment
