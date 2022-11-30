@@ -742,4 +742,18 @@ fn grapheme_offset_to_byte_offset(code: &str, grapheme_offset: usize) -> usize {
 /// Returns the grapheme offset of the grapheme that starts at
 fn byte_offset_to_grapheme_offset(code: &str, target_byte_offset: usize) -> Result<usize> {
     let mut grapheme_offset = 0;
-    for (byte_offset, _) in unicode_segmentatio
+    for (byte_offset, _) in unicode_segmentation::UnicodeSegmentation::grapheme_indices(code, true)
+    {
+        if byte_offset == target_byte_offset {
+            break;
+        }
+        if byte_offset > target_byte_offset {
+            bail!(
+                "Byte offset {} is not on a grapheme boundary in '{}'",
+                target_byte_offset,
+                code
+            );
+        }
+        grapheme_offset += 1;
+    }
+ 
