@@ -733,4 +733,13 @@ async fn handle_completion_request(
 /// Returns the byte offset for the start of the specified grapheme. Any grapheme beyond the last
 /// grapheme will return the end position of the input.
 fn grapheme_offset_to_byte_offset(code: &str, grapheme_offset: usize) -> usize {
-    unicode_segmentation::UnicodeSegment
+    unicode_segmentation::UnicodeSegmentation::grapheme_indices(code, true)
+        .nth(grapheme_offset)
+        .map(|(byte_offset, _)| byte_offset)
+        .unwrap_or_else(|| code.len())
+}
+
+/// Returns the grapheme offset of the grapheme that starts at
+fn byte_offset_to_grapheme_offset(code: &str, target_byte_offset: usize) -> Result<usize> {
+    let mut grapheme_offset = 0;
+    for (byte_offset, _) in unicode_segmentatio
