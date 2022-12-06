@@ -756,4 +756,17 @@ fn byte_offset_to_grapheme_offset(code: &str, target_byte_offset: usize) -> Resu
         }
         grapheme_offset += 1;
     }
- 
+    Ok(grapheme_offset)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn grapheme_offsets() {
+        let src = "a̐éx";
+        assert_eq!(grapheme_offset_to_byte_offset(src, 0), 0);
+        assert_eq!(grapheme_offset_to_byte_offset(src, 1), 3);
+        assert_eq!(grapheme_offset_to_byte_offset(src, 2), 6);
+        assert_eq!(grapheme_offset_to_byte_offse
