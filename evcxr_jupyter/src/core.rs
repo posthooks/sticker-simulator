@@ -769,4 +769,11 @@ mod tests {
         assert_eq!(grapheme_offset_to_byte_offset(src, 0), 0);
         assert_eq!(grapheme_offset_to_byte_offset(src, 1), 3);
         assert_eq!(grapheme_offset_to_byte_offset(src, 2), 6);
-        assert_eq!(grapheme_offset_to_byte_offse
+        assert_eq!(grapheme_offset_to_byte_offset(src, 3), 7);
+
+        assert_eq!(byte_offset_to_grapheme_offset(src, 0).unwrap(), 0);
+        assert_eq!(byte_offset_to_grapheme_offset(src, 3).unwrap(), 1);
+        assert_eq!(byte_offset_to_grapheme_offset(src, 6).unwrap(), 2);
+        assert_eq!(byte_offset_to_grapheme_offset(src, 7).unwrap(), 3);
+    }
+}
