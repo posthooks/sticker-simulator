@@ -59,3 +59,56 @@ pub(crate) fn update_if_necessary() -> Result<()> {
     // If the kernel directory doesn't exist, then we're probably being run from
     // a wrapper, so we shouldn't "update", since that would in effect be
     // installing ourselves when we weren't already installed.
+    if !kernel_dir.exists() {
+        return Ok(());
+    }
+    let installed_version = std::fs::read(kernel_dir.join("version.txt")).unwrap_or_default();
+    if installed_version != VERSION_TXT {
+        install()?;
+        eprintln!(
+            "\n\n==================================================================\n\
+            Updated Evcxr Jupyter installation. Note, updates unfortunately \n\
+            won't take effect until the next time you start jupyter notebook.\n\
+            ==================================================================\n"
+        );
+    }
+    Ok(())
+}
+
+pub(crate) fn install_resource(dir: &Path, filename: &str, bytes: &'static [u8]) -> Result<()> {
+    let res_path = dir.join(filename);
+    println!("Writing {}", res_path.to_string_lossy());
+    let mut file = fs::File::create(res_path)?;
+    file.write_all(bytes)?;
+    Ok(())
+}
+
+pub(crate) fn uninstall() -> Result<()> {
+    let kernel_dir = get_kernel_dir()?;
+    println!("Deleting {}", kernel_dir.to_string_lossy());
+    fs::remove_dir_all(kernel_dir)?;
+    println!("Uninstall complete");
+    Ok(())
+}
+
+// https://jupyter-client.readthedocs.io/en/latest/kernels.html
+fn get_kernel_dir() -> Result<PathBuf> {
+    let jupyter_dir = if let Ok(dir) = env::var("JUPYTER_PATH") {
+        PathBuf::from(dir)
+    } else if let Some(dir) = get_user_kernel_dir() {
+        dir
+    } else {
+        bail!("Couldn't get XDG data directory");
+    };
+    Ok(jupyter_dir.join("kernels").join("rust"))
+}
+
+#[cfg(not(target_os = "macos"))]
+fn get_user_kernel_dir() -> Option<PathBuf> {
+    dirs::data_dir().map(|data_dir| data_dir.join("jupyter"))
+}
+
+#[cfg(target_os = "macos")]
+fn get_user_kernel_dir() -> Option<PathBuf> {
+    dirs::data_dir().and_then(|d| d.parent().map(|data_dir| data_dir.join("Jupyter")))
+}
