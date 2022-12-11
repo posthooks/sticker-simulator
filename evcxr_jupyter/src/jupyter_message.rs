@@ -24,4 +24,15 @@ struct RawMessage {
     jparts: Vec<Bytes>,
 }
 
-i
+impl RawMessage {
+    pub(crate) async fn read<S: zeromq::SocketRecv>(
+        connection: &mut Connection<S>,
+    ) -> Result<RawMessage> {
+        Self::from_multipart(connection.socket.recv().await?, connection)
+    }
+
+    pub(crate) fn from_multipart<S>(
+        multipart: zeromq::ZmqMessage,
+        connection: &Connection<S>,
+    ) -> Result<RawMessage> {
+        let delimiter_index = mul
