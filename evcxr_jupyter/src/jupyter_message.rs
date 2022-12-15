@@ -35,4 +35,13 @@ impl RawMessage {
         multipart: zeromq::ZmqMessage,
         connection: &Connection<S>,
     ) -> Result<RawMessage> {
-        let delimiter_index = mul
+        let delimiter_index = multipart
+            .iter()
+            .position(|part| &part[..] == DELIMITER)
+            .ok_or_else(|| anyhow!("Missing delimeter"))?;
+        let mut parts = multipart.into_vec();
+        let jparts: Vec<_> = parts.drain(delimiter_index + 2..).collect();
+        let hmac = parts.pop().unwrap();
+        // Remove delimiter, so that what's left is just the identities.
+        parts.pop();
+ 
