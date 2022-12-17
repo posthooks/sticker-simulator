@@ -44,4 +44,15 @@ impl RawMessage {
         let hmac = parts.pop().unwrap();
         // Remove delimiter, so that what's left is just the identities.
         parts.pop();
- 
+        let zmq_identities = parts;
+
+        let raw_message = RawMessage {
+            zmq_identities,
+            jparts,
+        };
+
+        if let Some(mac_template) = &connection.mac {
+            let mut mac = mac_template.clone();
+            raw_message.digest(&mut mac);
+            use hmac::Mac;
+            if let Err(error) = mac.verify(GenericArray::from_
