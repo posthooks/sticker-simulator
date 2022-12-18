@@ -68,4 +68,14 @@ impl RawMessage {
         let hmac = if let Some(mac_template) = &connection.mac {
             let mut mac = mac_template.clone();
             self.digest(&mut mac);
-     
+            hex::encode(mac.finalize().into_bytes().as_slice())
+        } else {
+            String::new()
+        };
+        let mut parts: Vec<bytes::Bytes> = Vec::new();
+        for part in &self.zmq_identities {
+            parts.push(part.to_vec().into());
+        }
+        parts.push(DELIMITER.into());
+        parts.push(hmac.as_bytes().to_vec().into());
+      
