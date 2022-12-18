@@ -55,4 +55,17 @@ impl RawMessage {
             let mut mac = mac_template.clone();
             raw_message.digest(&mut mac);
             use hmac::Mac;
-            if let Err(error) = mac.verify(GenericArray::from_
+            if let Err(error) = mac.verify(GenericArray::from_slice(&hex::decode(&hmac)?)) {
+                bail!("{}", error);
+            }
+        }
+
+        Ok(raw_message)
+    }
+
+    async fn send<S: zeromq::SocketSend>(self, connection: &mut Connection<S>) -> Result<()> {
+        use hmac::Mac;
+        let hmac = if let Some(mac_template) = &connection.mac {
+            let mut mac = mac_template.clone();
+            self.digest(&mut mac);
+     
