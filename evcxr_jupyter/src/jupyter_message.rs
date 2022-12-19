@@ -78,4 +78,15 @@ impl RawMessage {
         }
         parts.push(DELIMITER.into());
         parts.push(hmac.as_bytes().to_vec().into());
-      
+        for part in &self.jparts {
+            parts.push(part.to_vec().into());
+        }
+        // ZmqMessage::try_from only fails if parts is empty, which it never
+        // will be here.
+        let message = zeromq::ZmqMessage::try_from(parts).unwrap();
+        connection.socket.send(message).await?;
+        Ok(())
+    }
+
+    fn digest(&self, mac: &mut HmacSha256) {
+        us
