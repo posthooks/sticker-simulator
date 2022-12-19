@@ -89,4 +89,23 @@ impl RawMessage {
     }
 
     fn digest(&self, mac: &mut HmacSha256) {
-        us
+        use hmac::Mac;
+        for part in &self.jparts {
+            mac.update(part);
+        }
+    }
+}
+
+#[derive(Clone)]
+pub(crate) struct JupyterMessage {
+    zmq_identities: Vec<Bytes>,
+    header: JsonValue,
+    parent_header: JsonValue,
+    metadata: JsonValue,
+    content: JsonValue,
+}
+
+const DELIMITER: &[u8] = b"<IDS|MSG>";
+
+impl JupyterMessage {
+   
