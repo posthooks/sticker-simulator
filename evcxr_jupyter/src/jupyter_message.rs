@@ -127,4 +127,18 @@ impl JupyterMessage {
             zmq_identities: raw_message.zmq_identities,
             header: message_to_json(&raw_message.jparts[0])?,
             parent_header: message_to_json(&raw_message.jparts[1])?,
-            metadata: message_to_json(&raw_messag
+            metadata: message_to_json(&raw_message.jparts[2])?,
+            content: message_to_json(&raw_message.jparts[3])?,
+        })
+    }
+
+    pub(crate) fn message_type(&self) -> &str {
+        self.header["msg_type"].as_str().unwrap_or("")
+    }
+
+    pub(crate) fn code(&self) -> &str {
+        self.content["code"].as_str().unwrap_or("")
+    }
+
+    pub(crate) fn cursor_pos(&self) -> usize {
+        se
