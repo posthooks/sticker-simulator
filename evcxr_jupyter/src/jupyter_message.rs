@@ -108,4 +108,13 @@ pub(crate) struct JupyterMessage {
 const DELIMITER: &[u8] = b"<IDS|MSG>";
 
 impl JupyterMessage {
-   
+    pub(crate) async fn read<S: zeromq::SocketRecv>(
+        connection: &mut Connection<S>,
+    ) -> Result<JupyterMessage> {
+        Self::from_raw_message(RawMessage::read(connection).await?)
+    }
+
+    fn from_raw_message(raw_message: RawMessage) -> Result<JupyterMessage> {
+        fn message_to_json(message: &[u8]) -> Result<JsonValue> {
+            Ok(json::parse(std::str::from_utf8(message)?)?)
+    
