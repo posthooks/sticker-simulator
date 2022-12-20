@@ -141,4 +141,17 @@ impl JupyterMessage {
     }
 
     pub(crate) fn cursor_pos(&self) -> usize {
-        se
+        self.content["cursor_pos"].as_usize().unwrap_or_default()
+    }
+
+    pub(crate) fn target_name(&self) -> &str {
+        self.content["target_name"].as_str().unwrap_or("")
+    }
+
+    pub(crate) fn data(&self) -> &JsonValue {
+        &self.content["data"]
+    }
+
+    pub(crate) fn comm_id(&self) -> &str {
+        self.content["comm_id"].as_str().unwrap_or("")
+    
