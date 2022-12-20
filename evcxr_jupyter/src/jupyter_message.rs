@@ -117,4 +117,14 @@ impl JupyterMessage {
     fn from_raw_message(raw_message: RawMessage) -> Result<JupyterMessage> {
         fn message_to_json(message: &[u8]) -> Result<JsonValue> {
             Ok(json::parse(std::str::from_utf8(message)?)?)
-    
+        }
+
+        if raw_message.jparts.len() < 4 {
+            bail!("Insufficient message parts {}", raw_message.jparts.len());
+        }
+
+        Ok(JupyterMessage {
+            zmq_identities: raw_message.zmq_identities,
+            header: message_to_json(&raw_message.jparts[0])?,
+            parent_header: message_to_json(&raw_message.jparts[1])?,
+            metadata: message_to_json(&raw_messag
