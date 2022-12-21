@@ -154,4 +154,11 @@ impl JupyterMessage {
 
     pub(crate) fn comm_id(&self) -> &str {
         self.content["comm_id"].as_str().unwrap_or("")
-    
+    }
+
+    // Creates a new child message of this message. ZMQ identities are not transferred.
+    pub(crate) fn new_message(&self, msg_type: &str) -> JupyterMessage {
+        let mut header = self.header.clone();
+        header["msg_type"] = JsonValue::String(msg_type.to_owned());
+        header["username"] = JsonValue::String("kernel".to_owned());
+        header["msg_id"] = JsonValue::Strin
