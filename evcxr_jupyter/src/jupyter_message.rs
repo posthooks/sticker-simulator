@@ -173,4 +173,12 @@ impl JupyterMessage {
         }
     }
 
-    // Creates a reply to this message. This is a child with th
+    // Creates a reply to this message. This is a child with the message type determined
+    // automatically by replacing "request" with "reply". ZMQ identities are transferred.
+    pub(crate) fn new_reply(&self) -> JupyterMessage {
+        let mut reply = self.new_message(&self.message_type().replace("_request", "_reply"));
+        reply.zmq_identities = self.zmq_identities.clone();
+        reply
+    }
+
+    #[must_use = "Need to send this message fo
