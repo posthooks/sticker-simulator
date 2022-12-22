@@ -192,4 +192,16 @@ impl JupyterMessage {
         &self.content
     }
 
-    pub(crate) fn with_content(mut self, content: JsonValue) -> JupyterMessag
+    pub(crate) fn with_content(mut self, content: JsonValue) -> JupyterMessage {
+        self.content = content;
+        self
+    }
+
+    pub(crate) fn with_message_type(mut self, msg_type: &str) -> JupyterMessage {
+        self.header["msg_type"] = JsonValue::String(msg_type.to_owned());
+        self
+    }
+
+    pub(crate) fn without_parent_header(mut self) -> JupyterMessage {
+        self.parent_header = object! {};
+        
