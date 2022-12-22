@@ -161,4 +161,16 @@ impl JupyterMessage {
         let mut header = self.header.clone();
         header["msg_type"] = JsonValue::String(msg_type.to_owned());
         header["username"] = JsonValue::String("kernel".to_owned());
-        header["msg_id"] = JsonValue::Strin
+        header["msg_id"] = JsonValue::String(Uuid::new_v4().to_string());
+        header["date"] = JsonValue::String(Utc::now().to_rfc3339());
+
+        JupyterMessage {
+            zmq_identities: Vec::new(),
+            header,
+            parent_header: self.header.clone(),
+            metadata: JsonValue::new_object(),
+            content: JsonValue::new_object(),
+        }
+    }
+
+    // Creates a reply to this message. This is a child with th
