@@ -181,4 +181,15 @@ impl JupyterMessage {
         reply
     }
 
-    #[must_use = "Need to send this message fo
+    #[must_use = "Need to send this message for it to have any effect"]
+    pub(crate) fn comm_close_message(&self) -> JupyterMessage {
+        self.new_message("comm_close").with_content(object! {
+            "comm_id" => self.comm_id()
+        })
+    }
+
+    pub(crate) fn get_content(&self) -> &JsonValue {
+        &self.content
+    }
+
+    pub(crate) fn with_content(mut self, content: JsonValue) -> JupyterMessag
