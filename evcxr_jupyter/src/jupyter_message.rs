@@ -204,4 +204,15 @@ impl JupyterMessage {
 
     pub(crate) fn without_parent_header(mut self) -> JupyterMessage {
         self.parent_header = object! {};
-        
+        self
+    }
+
+    pub(crate) async fn send<S: zeromq::SocketSend>(
+        &self,
+        connection: &mut Connection<S>,
+    ) -> Result<()> {
+        // If performance is a concern, we can probably avoid the clone and to_vec calls with a bit
+        // of refactoring.
+        let raw_message = RawMessage {
+            zmq_identities: self.zmq_identities.clone(),
+            jparts
