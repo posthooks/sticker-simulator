@@ -215,4 +215,15 @@ impl JupyterMessage {
         // of refactoring.
         let raw_message = RawMessage {
             zmq_identities: self.zmq_identities.clone(),
-            jparts
+            jparts: vec![
+                self.header.dump().as_bytes().to_vec().into(),
+                self.parent_header.dump().as_bytes().to_vec().into(),
+                self.metadata.dump().as_bytes().to_vec().into(),
+                self.content.dump().as_bytes().to_vec().into(),
+            ],
+        };
+        raw_message.send(connection).await
+    }
+}
+
+impl fmt::Debug for Jupy
