@@ -226,4 +226,12 @@ impl JupyterMessage {
     }
 }
 
-impl fmt::Debug for Jupy
+impl fmt::Debug for JupyterMessage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "\nHEADER {}", self.header.pretty(2))?;
+        writeln!(f, "PARENT_HEADER {}", self.parent_header.pretty(2))?;
+        writeln!(f, "METADATA {}", self.metadata.pretty(2))?;
+        writeln!(f, "CONTENT {}\n", self.content.pretty(2))?;
+        Ok(())
+    }
+}
