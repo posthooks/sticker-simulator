@@ -12,4 +12,19 @@ use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Result;
 
-mod c
+mod connection;
+mod control_file;
+mod core;
+mod install;
+mod jupyter_message;
+
+fn run(control_file_name: &str) -> Result<()> {
+    let config = control_file::Control::parse_file(control_file_name)?;
+    core::Server::run(&config)
+}
+
+fn main() -> Result<()> {
+    evcxr::runtime_hook();
+    let mut args = std::env::args();
+    let bin = args.next().unwrap();
+   
