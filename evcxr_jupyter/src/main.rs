@@ -27,4 +27,10 @@ fn main() -> Result<()> {
     evcxr::runtime_hook();
     let mut args = std::env::args();
     let bin = args.next().unwrap();
-   
+    if let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--control_file" => {
+                if let Err(error) = install::update_if_necessary() {
+                    eprintln!("Warning: tried to update client, but failed: {}", error);
+                }
+                return run(&args.next().ok_or_else(|| anyhow!("Missing control file"))?
