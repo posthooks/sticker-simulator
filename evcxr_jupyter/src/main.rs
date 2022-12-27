@@ -33,4 +33,17 @@ fn main() -> Result<()> {
                 if let Err(error) = install::update_if_necessary() {
                     eprintln!("Warning: tried to update client, but failed: {}", error);
                 }
-                return run(&args.next().ok_or_else(|| anyhow!("Missing control file"))?
+                return run(&args.next().ok_or_else(|| anyhow!("Missing control file"))?);
+            }
+            "--install" => return install::install(),
+            "--uninstall" => return install::uninstall(),
+            "--help" => {}
+            x => bail!("Unrecognised option {}", x),
+        }
+    }
+    println!("To install, run:\n  {} --install", bin);
+    println!("To uninstall, run:\n  {} --uninstall", bin);
+    Ok(())
+}
+
+#[cfg(feature = "mimalloc")]
