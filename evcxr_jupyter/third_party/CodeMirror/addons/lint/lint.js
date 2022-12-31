@@ -19,4 +19,17 @@ function(CodeMirror) {
 
     function position(e) {
       if (!tt.parentNode) return CodeMirror.off(document, "mousemove", position);
-      tt.style.top = Math.max(0, e.clientY - tt.offsetHeight - 5) 
+      tt.style.top = Math.max(0, e.clientY - tt.offsetHeight - 5) + "px";
+      tt.style.left = (e.clientX + 5) + "px";
+    }
+    CodeMirror.on(document, "mousemove", position);
+    position(e);
+    if (tt.style.opacity != null) tt.style.opacity = 1;
+    return tt;
+  }
+  function rm(elt) {
+    if (elt.parentNode) elt.parentNode.removeChild(elt);
+  }
+  function hideTooltip(tt) {
+    if (!tt.parentNode) return;
+    if (tt.style.opacity
