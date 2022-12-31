@@ -32,4 +32,16 @@ function(CodeMirror) {
   }
   function hideTooltip(tt) {
     if (!tt.parentNode) return;
-    if (tt.style.opacity
+    if (tt.style.opacity == null) rm(tt);
+    tt.style.opacity = 0;
+    setTimeout(function() { rm(tt); }, 600);
+  }
+
+  function showTooltipFor(cm, e, content, node) {
+    var tooltip = showTooltip(cm, e, content);
+    function hide() {
+      CodeMirror.off(node, "mouseout", hide);
+      if (tooltip) { hideTooltip(tooltip); tooltip = null; }
+    }
+    var poll = setInterval(function() {
+      if (tooltip) for (var n = node;;
