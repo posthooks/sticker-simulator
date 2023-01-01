@@ -70,4 +70,13 @@ function(CodeMirror) {
   }
 
   function clearMarks(cm) {
-    var state = cm.state.li
+    var state = cm.state.lint;
+    if (state.hasGutter) cm.clearGutter(GUTTER_ID);
+    for (var i = 0; i < state.marked.length; ++i)
+      state.marked[i].clear();
+    state.marked.length = 0;
+  }
+
+  function makeMarker(cm, labels, severity, multiple, tooltips) {
+    var marker = document.createElement("div"), inner = marker;
+    marker.className = "CodeMirror-lint-marker CodeMirror-lint-ma
