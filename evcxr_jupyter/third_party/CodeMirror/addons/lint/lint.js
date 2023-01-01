@@ -57,4 +57,17 @@ function(CodeMirror) {
   function LintState(cm, options, hasGutter) {
     this.marked = [];
     this.options = options;
-    this.timeout = nu
+    this.timeout = null;
+    this.hasGutter = hasGutter;
+    this.onMouseOver = function(e) { onMouseOver(cm, e); };
+    this.waitingFor = 0
+  }
+
+  function parseOptions(_cm, options) {
+    if (options instanceof Function) return {getAnnotations: options};
+    if (!options || options === true) options = {};
+    return options;
+  }
+
+  function clearMarks(cm) {
+    var state = cm.state.li
