@@ -130,4 +130,13 @@ function(CodeMirror) {
     getAnnotations(cm.getValue(), function(annotations, arg2) {
       cm.off("change", abort)
       if (state.waitingFor != id) return
-      if (arg2 && annotati
+      if (arg2 && annotations instanceof CodeMirror) annotations = arg2
+      cm.operation(function() {updateLinting(cm, annotations)})
+    }, passOptions, cm);
+  }
+
+  function startLinting(cm) {
+    var state = cm.state.lint, options = state.options;
+    /*
+     * Passing rules in `options` property prevents JSHint (and other linters) from complaining
+     * about unrecognized
