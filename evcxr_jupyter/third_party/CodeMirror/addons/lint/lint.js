@@ -179,4 +179,13 @@ function(CodeMirror) {
         if (!severity) severity = "error";
         maxSeverity = getMaxSeverity(maxSeverity, severity);
 
-        if (options.formatAnnotation) ann = options.formatAnno
+        if (options.formatAnnotation) ann = options.formatAnnotation(ann);
+        if (state.hasGutter) tipLabel.appendChild(annotationTooltip(ann));
+
+        if (ann.to) state.marked.push(cm.markText(ann.from, ann.to, {
+          className: "CodeMirror-lint-mark CodeMirror-lint-mark-" + severity,
+          __annotation: ann
+        }));
+      }
+      // use original annotations[line] to show multiple messages
+      if (sta
