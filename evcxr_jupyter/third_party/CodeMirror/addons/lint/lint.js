@@ -188,4 +188,12 @@ function(CodeMirror) {
         }));
       }
       // use original annotations[line] to show multiple messages
-      if (sta
+      if (state.hasGutter)
+        cm.setGutterMarker(line, GUTTER_ID, makeMarker(cm, tipLabel, maxSeverity, annotations[line].length > 1,
+                                                       state.options.tooltips));
+    }
+    if (options.onUpdateLinting) options.onUpdateLinting(annotationsNotSorted, annotations, cm);
+  }
+
+  function onChange(cm) {
+    var state =
