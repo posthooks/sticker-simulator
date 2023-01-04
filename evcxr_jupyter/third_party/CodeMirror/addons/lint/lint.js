@@ -158,4 +158,14 @@ function(CodeMirror) {
 
   function updateLinting(cm, annotationsNotSorted) {
     clearMarks(cm);
-    var 
+    var state = cm.state.lint, options = state.options;
+
+    var annotations = groupByLine(annotationsNotSorted);
+
+    for (var line = 0; line < annotations.length; ++line) {
+      var anns = annotations[line];
+      if (!anns) continue;
+
+      // filter out duplicate messages
+      var message = [];
+      anns = anns.filter(function(item) { return message.indexOf(item.message) > -1 ? false : message.push(item.messag
