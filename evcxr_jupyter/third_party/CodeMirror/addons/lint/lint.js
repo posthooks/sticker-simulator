@@ -168,4 +168,15 @@ function(CodeMirror) {
 
       // filter out duplicate messages
       var message = [];
-      anns = anns.filter(function(item) { return message.indexOf(item.message) > -1 ? false : message.push(item.messag
+      anns = anns.filter(function(item) { return message.indexOf(item.message) > -1 ? false : message.push(item.message) });
+
+      var maxSeverity = null;
+      var tipLabel = state.hasGutter && document.createDocumentFragment();
+
+      for (var i = 0; i < anns.length; ++i) {
+        var ann = anns[i];
+        var severity = ann.severity;
+        if (!severity) severity = "error";
+        maxSeverity = getMaxSeverity(maxSeverity, severity);
+
+        if (options.formatAnnotation) ann = options.formatAnno
