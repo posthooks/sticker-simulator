@@ -242,4 +242,14 @@ function(CodeMirror) {
       var state = cm.state.lint = new LintState(cm, parseOptions(cm, val), hasLintGutter);
       if (state.options.lintOnChange !== false)
         cm.on("change", onChange);
-      if (sta
+      if (state.options.tooltips != false && state.options.tooltips != "gutter")
+        CodeMirror.on(cm.getWrapperElement(), "mouseover", state.onMouseOver);
+
+      startLinting(cm);
+    }
+  });
+
+  CodeMirror.defineExtension("performLint", function() {
+    if (this.state.lint) startLinting(this);
+  });
+});
