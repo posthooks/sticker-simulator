@@ -1,4 +1,19 @@
 [package]
 name = "evcxr_repl"
 version = "0.14.2"
-license = "MIT O
+license = "MIT OR Apache-2.0"
+description = "A REPL for Rust"
+repository = "https://github.com/evcxr/evcxr"
+readme = "README.md"
+authors = ["The Evcxr Authors"]
+edition = "2021"
+
+[features]
+default = ["mimalloc"]
+
+[dependencies]
+evcxr = { version = "=0.14.2", path = "../evcxr" }
+rustyline = "10.0.0"
+colored = "2.0.0"
+once_cell = "1.5.2"
+regex = { version = "1.4.1", default-features 
