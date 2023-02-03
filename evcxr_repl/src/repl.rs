@@ -69,3 +69,46 @@ impl Completer for EvcxrRustylineHelper {
         Ok((completions.start_offset, res))
     }
 }
+
+impl Highlighter for EvcxrRustylineHelper {
+    fn highlight_prompt<'b, 's: 'b, 'p: 'b>(
+        &'s self,
+        prompt: &'p str,
+        _default: bool,
+    ) -> Cow<'b, str> {
+        prompt.yellow().to_string().into()
+    }
+}
+
+impl Validator for EvcxrRustylineHelper {
+    fn validate(&self, ctx: &mut ValidationContext<'_>) -> Result<ValidationResult, ReadlineError> {
+        let input = ctx.input();
+        // If a user is hammering on the enter key, lets pass things along to
+        // rustc. This is an escape hatch for the case where *we* know (well,
+        // think) the source is incomplete, but the user doesn't. It also makes
+        // bugs in our code less disasterous.
+        if input.ends_with("\n\n") {
+            return Ok(ValidationResult::Valid(None));
+        }
+        match validate_source_fragment(input) {
+            FragmentValidity::Incomplete => Ok(ValidationResult::Incomplete),
+            FragmentValidity::Invalid => {
+                // Hrm... AFAICT if we return Invalid here, we don't get to run
+                // it. `rustc` is likely to be able to provide a better error
+                // message than us, so...
+                Ok(ValidationResult::Valid(None))
+            }
+            FragmentValidity::Valid => Ok(ValidationResult::Valid(None)),
+        }
+    }
+
+    // We actually work with this on for the most part, but it seems incomplete
+    // in rustyline, so disable it (explicitly). It's unclear how desirable
+    // it is without the ability to e.g. highlight the mismatched bracket or
+    // whatever.
+    fn validate_while_typing(&self) -> bool {
+        false
+    }
+}
+
+impl Helper for EvcxrRustylineHelper {}
