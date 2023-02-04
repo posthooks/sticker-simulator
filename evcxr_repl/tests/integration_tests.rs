@@ -8,4 +8,16 @@
 use std::process;
 
 // Checks that our binary can be executed. This used to be an important thing to
-// check due to https://github.com/rust-lang/rust/issues/45601 whic
+// check due to https://github.com/rust-lang/rust/issues/45601 which meant that
+// we could easily end up with a binary that couldn't be executed (without
+// LD_LIBRARY PATH or similar). That bug is now long fixed, but this test
+// perhaps still has some value.
+#[test]
+fn test_binary_execution() {
+    let output = process::Command::new(
+        std::env::current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+    
