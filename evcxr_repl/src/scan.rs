@@ -314,3 +314,298 @@ fn eat_comment_block(iter: &mut Peekable<CharIndices<'_>>) -> bool {
                 }
             }
             '*' => {
+                if let Some((_, '/')) = iter.peek() {
+                    iter.next();
+                    depth -= 1;
+                }
+            }
+            _ => {}
+        }
+    }
+    true
+}
+
+/// Return value of `eat_char`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum EatCharRes {
+    AteChar,
+    SawLifetime,
+    SawInvalid,
+}
+
+/// This is kinda hacky, but with a simple scanner like ours, it's hard to tell
+/// lifetimes and char's apart.
+///
+/// Well, sort of. It's pretty easy to recognize chars in *valid* syntax, but we
+/// need to fail gracefully in the case that a user types some invalid syntax.
+/// It's not okay if a user types `foo('a ')` and we think the `(` never got
+/// closed.
+///
+/// This function either:
+/// - sees a char literal, and advances the iterator past it, returning
+///   `Some(AteChar)`.
+/// - sees something that could be a lifetime, and returns `Some(SawLifetime)`.
+/// - sees something it knows is invalid, and returns `Some(SawInvalid)`.
+/// - hits the end of the string, and returns None. This is `None` rather than
+///   another `EatCharRes` case so that we can use `?`.
+///
+/// Note that the caller (`eat_char`) enforces consistent behavior WRT `input`
+/// position in the cases where we don't consume a character.
+fn do_eat_char(input: &mut Peekable<CharIndices<'_>>) -> Option<EatCharRes> {
+    let (_, nextc) = input.next()?;
+    if nextc == '\n' || nextc == '\r' || nextc == '\t' {
+        // these are illegal inside a char literal, according to
+        // https://doc.rust-lang.org/reference/tokens.html#character-literals
+        return Some(EatCharRes::SawInvalid);
+    }
+
+    if nextc == '\\' {
+        // Eating an escape sequence. Eat the character which was escaped.
+        // Critically, this might be a single quote, which would confuse the
+        // test in the loop below.
+        let (_, c) = input.next()?;
+        // Chars which are allowed to appear after a backslash in a char escape,
+        // according to the same link as above.
+        let esc = ['\\', '\'', '"', 'x', 'u', 'n', 't', 'r', '0'];
+        if !esc.contains(&c) {
+            return Some(EatCharRes::SawInvalid);
+        }
+        // At this point, we're reasonably confident it's an escaped char literal.
+        // Hope for the best, and read until we see a closing quote or something
+        // that definitely doesn't belong. This should probably be made smarter,
+        // since the actual syntax for the escape sequences is not that bad.
+        for (_, c) in input {
+            if c == '\'' {
+                return Some(EatCharRes::AteChar);
+            }
+            // Sanity check for a newline, which probably indicates an unclosed
+            // quote.
+            if c == '\n' {
+                return Some(EatCharRes::SawInvalid);
+            }
+        }
+        // Hit end of string.
+        None
+    } else {
+        // Not an escape sequence
+        let could_be_lifetime = UnicodeXID::is_xid_start(nextc);
+        // The first char inside the quote was not a backslash, so it's either
+        // some sort of lifetime, or a char literal. If it's a char literal, the
+        // very *next* thing should be a closing quote...
+        let (_, maybe_end) = input.next()?;
+
+        Some(if maybe_end == '\'' {
+            EatCharRes::AteChar
+        } else if could_be_lifetime {
+            // This is needed to defend against cases like `foo('a ')`. We want
+            // to catch that this is invalid, because missing the `)` would be
+            // bad -- we might think `(` never got closed.
+            EatCharRes::SawLifetime
+        } else {
+            // Couldn't be a lifetime, but we didn't get a closing quote where
+            // we needed, so it must be invalid.
+            EatCharRes::SawInvalid
+        })
+    }
+}
+
+/// This should be called right after `input` reads a `'`. See `do_eat_char` for
+/// the explanation of what it does, this wrapper just exists to ensure that
+/// function leaves `input` in a consistent place in cases other than "ate the
+/// character" and "hit end of string", by making sure it doesn't modify the
+/// iterator except in those cases.
+///
+/// This is to keep things consistent/testable and avoid having to say "if we
+/// didn't scan a char, the iterator is left wherever it was when we became
+/// convinced it couldn't be one", and not because correctness current depends
+/// on the behavior.
+///
+/// Worth noting that it's likely this behavior makes no sense for the
+/// SawInvalid case -- in the future we probably want to have that advance past
+/// the invalid part.
+fn eat_char(input: &mut Peekable<CharIndices<'_>>) -> Option<EatCharRes> {
+    let mut scratch_input = input.clone();
+    let res = do_eat_char(&mut scratch_input);
+    if let Some(EatCharRes::AteChar) | None = res {
+        *input = scratch_input;
+    }
+    res
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum Bracket {
+    Round,
+    Square,
+    Curly,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    // Left arg is `None` if the nesting is invalid, or Some(remaining_str) if valid.
+    // note that for leaving it with no more chars we use "".
+    fn block_comment_test(s: &str, remaining: impl Into<Option<&'static str>>) {
+        let mut i = s.char_indices().peekable();
+        assert!(i.next().unwrap().1 == '/', "{}", s);
+        assert!(i.next().unwrap().1 == '*', "{}", s);
+        let good = eat_comment_block(&mut i);
+        if let Some(want) = remaining.into() {
+            let i = i.next().map_or(s.len(), |t| t.0);
+            assert_eq!(&s[i..], want, "{}", s);
+        } else {
+            assert!(!good, "{}", s);
+        }
+    }
+    fn line_comment_test(s: &str, remaining: &str) {
+        // It doesn't care about peekable, but we *are* going to give it one, so
+        // do so in the test in case somehow it matters.
+        let mut i = s.char_indices().peekable();
+        eat_comment_line(&mut i);
+        let next_idx = i.next().map_or(s.len(), |(i, _)| i);
+        assert_eq!(&s[next_idx..], remaining);
+    }
+    #[test]
+    fn test_comment_scan() {
+        block_comment_test("/* */", "");
+        block_comment_test("/* */ abcd", " abcd");
+        block_comment_test("/* /*/ */ */ 123", " 123");
+        block_comment_test("/*/", None);
+        block_comment_test("/* /* /* */ */", None);
+        block_comment_test("/* /* /* */ */ */", "");
+        block_comment_test("/* /* /*/ */ */ */", "");
+
+        line_comment_test("// foo\n bar", " bar");
+        line_comment_test("// foo", "");
+        // Test some degenerate cases, specifically if we ever call it with
+        // different args, it should still behave properly.
+        line_comment_test("\n", "");
+        line_comment_test("/\n", "");
+        line_comment_test("/", "");
+        line_comment_test("\n bar", " bar");
+        line_comment_test("/\n bar", " bar");
+    }
+
+    #[test]
+    fn test_string_scan() {
+        use StrKind::*;
+        assert_eq!(check_raw_str(r#" "" "#, 1), Some(Normal));
+        assert_eq!(check_raw_str(r#" r#"" "#, 3), Some(RawStr { hashes: 1 }));
+        assert_eq!(check_raw_str(r#" r##"" "#, 4), Some(RawStr { hashes: 2 }));
+        assert_eq!(check_raw_str(r#""" "#, 0), Some(Normal));
+        // Error cases.
+        assert_eq!(check_raw_str(r#" ##"" "#, 3), None);
+        assert_eq!(check_raw_str(r#"##"" "#, 2), None);
+    }
+
+    fn char_scan_test(test: &str, after: &str, res: Option<EatCharRes>) {
+        let mut i = test.char_indices().peekable();
+
+        assert_eq!(i.next().unwrap(), (0, '\''));
+        let actual = eat_char(&mut i);
+        // Make sure we ended up where we said we would.
+        let next_idx = i.next().map_or(test.len(), |t| t.0);
+        assert_eq!(&test[next_idx..], after);
+        assert_eq!(actual, res, "bad result for {}", test);
+    }
+    #[test]
+    fn test_char_scan() {
+        use EatCharRes::*;
+        char_scan_test("'static", "static", Some(SawLifetime));
+        char_scan_test("'s'abc", "abc", Some(AteChar));
+        char_scan_test("'a ", "a ", Some(SawLifetime));
+        char_scan_test("'\\\\' foo", " foo", Some(AteChar));
+        char_scan_test("'\\\'' foo", " foo", Some(AteChar));
+        char_scan_test("'\\u{1234}' foo", " foo", Some(AteChar));
+        char_scan_test("'ü' abc", " abc", Some(AteChar));
+        char_scan_test("'😀'foo", "foo", Some(AteChar));
+        char_scan_test("'😀", "", None);
+
+        char_scan_test("'\\\\'", "", Some(AteChar));
+        char_scan_test("'\\\''", "", Some(AteChar));
+        char_scan_test("'\\u{1234}", "", None);
+        char_scan_test("'\\n'", "", Some(AteChar));
+
+        char_scan_test("'a", "", None);
+        char_scan_test("'", "", None);
+        char_scan_test("'\n'", "\n'", Some(SawInvalid));
+        char_scan_test("') ", ") ", Some(SawInvalid));
+        char_scan_test("'\\\n ", "\\\n ", Some(SawInvalid));
+        char_scan_test("'\\u{1234} \n\n'", "\\u{1234} \n\n'", Some(SawInvalid));
+    }
+
+    fn test_validity(frag: &str, expect: FragmentValidity) {
+        assert_eq!(
+            validate_source_fragment(frag),
+            expect,
+            "for source fragment: `{}`",
+            frag
+        );
+        if expect == FragmentValidity::Invalid {
+            return;
+        }
+        // Ensure that for valid/incomplete source strings, all prefixes are
+        // either valid or incomplete. It seems like in the finished version of
+        // the rustyline validation features we don't get called except on
+        // newlines, so this is a bit more aggressive than we actually need.
+        // Still, at the moment it doesn't hurt.
+        for (i, _) in frag.char_indices() {
+            assert_ne!(
+                validate_source_fragment(&frag[..i]),
+                FragmentValidity::Invalid,
+                "validating {:?}, as substring of:\n`{}`",
+                &frag[..i],
+                frag,
+            );
+        }
+    }
+    #[test]
+    fn test_valid_source() {
+        let valid = |f: &str| {
+            test_validity(f, FragmentValidity::Valid);
+        };
+        let partial = |f: &str| {
+            test_validity(f, FragmentValidity::Incomplete);
+        };
+        let invalid = |f: &str| {
+            test_validity(f, FragmentValidity::Invalid);
+        };
+        valid("let valid = |f: &str| { test_validity(f, FragmentValidity::Valid); };");
+        valid(stringify! {
+            foo<'static>('\'', 1, r#"##"#);
+        });
+        invalid("[test)");
+        invalid("test)");
+        invalid("'['test]");
+        partial("fn test_valid_source() {");
+
+        partial("\"test 123");
+        partial("r#\"test 123\"");
+
+        valid("r##\"test 123\"# \"##.len()");
+
+        valid("// 123 /*");
+        valid("/* 123 /*\n// */ */");
+        // Valid, as 'a might start a lifetime
+        valid("'a\n");
+        // Invalid, as '3 could not.
+        invalid("'3\n");
+        // This is invalid, but the important thing is that we don't say
+        // incomplete.
+        invalid("foo('a ')\n");
+
+        invalid("#[]]");
+        partial("#[");
+        partial("#[derive(Debug)]");
+        partial("#[derive(Debug)]\n#[cfg(target_os = \"linux\")]");
+        partial("#[derive(Debug)]\nstruct S;\n#[derive(Debug)]");
+        partial("#[derive(Debug)] // comment");
+        partial("#[derive(Debug)] /* comment */");
+
+        valid("#[derive(Debug)] struct S;");
+        valid("#[cfg(target_os = \"linux\")]\n#[allow(unused_variables)]\nfn test() {}");
+        valid("#[doc = \"example # ]]] [[[\"] struct S;");
+        // Inner attributes are considered complete because they apply to
+        // the enclosing item
+        valid("#![derive(Debug)]");
+    }
+}
