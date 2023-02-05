@@ -20,4 +20,16 @@ fn test_binary_execution() {
             .parent()
             .unwrap()
             .parent()
-    
+            .unwrap()
+            .join("evcxr"),
+    )
+    .env_remove("LD_LIBRARY_PATH")
+    .output()
+    .unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert_eq!(stderr, "");
+    if !stdout.contains("Welcome to evcxr") {
+        panic!("Unexpected output:\n{:?}", stdout);
+    }
+}
