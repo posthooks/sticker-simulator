@@ -23,4 +23,15 @@ pub struct ContentMimeType {
 /// ```
 /// evcxr_runtime::mime_type("text/plain").text("Hello world");
 /// ```
-pub fn mime_type<S: Into<String>>(mim
+pub fn mime_type<S: Into<String>>(mime_type: S) -> ContentMimeType {
+    ContentMimeType {
+        mime_type: mime_type.into(),
+    }
+}
+
+impl ContentMimeType {
+    /// Emits the supplied content, which should be of the mime type already
+    /// specified. If the type is a binary format (e.g. image/png), the content
+    /// should have already been base64 encoded.
+    /// ```
+    /// evcxr_runtime::m
