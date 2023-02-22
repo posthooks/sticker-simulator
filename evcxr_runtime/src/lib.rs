@@ -34,4 +34,15 @@ impl ContentMimeType {
     /// specified. If the type is a binary format (e.g. image/png), the content
     /// should have already been base64 encoded.
     /// ```
-    /// evcxr_runtime::m
+    /// evcxr_runtime::mime_type("text/html")
+    ///     .text("<span style=\"color: red\">>Hello world</span>");
+    /// ```
+    pub fn text<S: AsRef<str>>(self, text: S) {
+        println!(
+            "EVCXR_BEGIN_CONTENT {}\n{}\nEVCXR_END_CONTENT",
+            self.mime_type,
+            text.as_ref()
+        );
+    }
+
+    /// Emits the supplied content, which should be
