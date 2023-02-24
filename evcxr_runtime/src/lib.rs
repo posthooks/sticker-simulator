@@ -54,4 +54,21 @@ impl ContentMimeType {
     /// ```
     #[cfg(feature = "bytes")]
     pub fn bytes(self, buffer: &[u8]) {
-        self.text(base64::encode(b
+        self.text(base64::encode(buffer))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::mime_type;
+
+    #[test]
+    fn test_emit_data() {
+        mime_type("text/plain").text("Hello world");
+    }
+
+    #[test]
+    fn test_mime_type_accept_string() {
+        mime_type("text/plain".to_owned()).text("Hello world");
+    }
+}
