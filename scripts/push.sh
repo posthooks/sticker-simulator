@@ -6,4 +6,19 @@ if ! git diff-index --quiet HEAD --; then
 fi
 MIN_RUST_VER=$(grep ^rust-version evcxr/Cargo.toml | cut -d'"' -f2)
 if [ -z "$MIN_RUST_VER" ]; then
-  echo "Failed to determine 
+  echo "Failed to determine minimum rust version" >&2
+  exit 1
+fi
+fail() {
+  echo "$@" >&2
+  exit 1
+}
+cargo +${MIN_RUST_VER} --version >/dev/null 2>&1 \
+  || rustup toolchain install $MIN_RUST_VER
+git pull --rebase
+cargo fmt --all -- --check
+cargo build
+cargo clippy -- -D warnings
+cargo +stable test --all || fail "Tests failed on stable"
+cargo +nightly test --all || fail "Tests failed on nightly"
+car
