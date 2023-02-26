@@ -21,4 +21,6 @@ cargo build
 cargo clippy -- -D warnings
 cargo +stable test --all || fail "Tests failed on stable"
 cargo +nightly test --all || fail "Tests failed on nightly"
-car
+cargo +${MIN_RUST_VER}-x86_64-unknown-linux-gnu test --all \
+  || fail "Tests failed on $MIN_RUST_VER"
+git push
