@@ -20,4 +20,13 @@ fi
 echo "Releasing $VERSION"
 git pull --rebase
 perl -pi -e 's/(^# .*) \(unreleased\)$/$1/' RELEASE_NOTES.md
-perl 
+perl -pi -e 's/^version = "[\d\.]+"/version = "'$VERSION'"/;\
+    s/^evcxr = \{ version = "=[\d\.]+"/evcxr = \{ version = "='$VERSION'"/' \
+  evcxr/Cargo.toml \
+  evcxr_repl/Cargo.toml \
+  evcxr_jupyter/Cargo.toml
+cargo build
+cargo +stable test --all
+cargo +nightly test --all
+cargo +${MIN_RUST_VER}-x86_64-unknown-linux-gnu test --all
+git commit -a -m "Bump vesion to 
